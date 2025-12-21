@@ -1,0 +1,17 @@
+@use "./styles/tokens.scss" as *;
+
+page {
+  background: $bg-color;
+  color: $primary-color;
+  font-family: $font-family;
+}
+
+:root,
+page {
+  --nut-primary-color: #{$highlight-color};
+  --nut-button-primary-background-color: #{$highlight-color};
+  --nut-button-primary-border-color: #{$highlight-color};
+  --nut-button-default-color: #{$primary-color};
+  --nut-text-color: #{$primary-color};
+}
+

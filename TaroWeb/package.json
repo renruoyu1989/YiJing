@@ -1,0 +1,48 @@
+{
+  "name": "taro-iching",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Taro Vue3 + TS 易经金钱卦",
+  "scripts": {
+    "dev:weapp": "taro build --type weapp --watch",
+    "dev:h5": "taro build --type h5 --watch",
+    "build:weapp": "taro build --type weapp",
+    "build:h5": "taro build --type h5",
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@nutui/nutui-taro": "^4.3.13",
+    "@tarojs/components": "3.6.26",
+    "@tarojs/router": "3.6.26",
+    "@tarojs/runtime": "3.6.26",
+    "@tarojs/taro": "3.6.26",
+    "pinia": "^2.2.6",
+    "vue": "^3.5.13"
+  },
+  "devDependencies": {
+    "@tarojs/cli": "3.6.26",
+    "@tarojs/plugin-framework-vue3": "3.6.26",
+    "@tarojs/plugin-html": "3.6.26",
+    "@tarojs/plugin-platform-h5": "3.6.26",
+    "@tarojs/plugin-platform-weapp": "3.6.26",
+    "@tarojs/webpack5-runner": "3.6.26",
+    "@vue/compiler-sfc": "^3.5.13",
+    "@vue/babel-plugin-jsx": "^1.2.2",
+    "@types/node": "^22.10.2",
+    "@typescript-eslint/eslint-plugin": "^8.18.0",
+    "@typescript-eslint/parser": "^8.18.0",
+    "babel-preset-taro": "3.6.26",
+    "eslint": "^9.17.0",
+    "eslint-plugin-vue": "^9.32.0",
+    "sass": "^1.83.0",
+    "stylelint": "^16.11.0",
+    "stylelint-config-standard-scss": "^14.0.0",
+    "typescript": "^5.7.2",
+    "vue-loader": "^16.8.3"
+  },
+  "overrides": {
+    "vue-loader": "^16.8.3"
+  }
+}
+
