@@ -11,6 +11,7 @@ export interface HexagramData {
   name: string;
   symbol: string; // 1=Yang, 0=Yin, from bottom to top
   description: string;
+  use?: string; // 用九/用六（乾坤六爻皆变时）
   lines: {
     [key: number]: string; // 1-6
   };

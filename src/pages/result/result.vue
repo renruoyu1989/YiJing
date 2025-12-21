@@ -36,7 +36,11 @@
           <view class="section-title">
             <text class="title-text">变爻</text>
           </view>
-          <view v-for="idx in mutatedLines" :key="idx" class="mutation-item">
+          <view v-if="useLineText" class="mutation-item">
+            <text class="line-idx">{{ useLineLabel }}</text>
+            <text class="content-text">{{ useLineText }}</text>
+          </view>
+          <view v-else v-for="idx in mutatedLines" :key="idx" class="mutation-item">
             <text class="line-idx">第{{ idx }}爻：</text>
             <text class="content-text">{{ currentHex?.lines[idx] }}</text>
           </view>
@@ -67,6 +71,17 @@ const store = useIChingStore();
 
 const currentHex = computed(() => store.currentHexagram);
 const mutatedLines = computed(() => store.mutatedLinesIndices);
+const useLineLabel = computed(() => {
+  if (!currentHex.value?.use) return '';
+  if (currentHex.value.id === 1) return '用九：';
+  if (currentHex.value.id === 2) return '用六：';
+  return '';
+});
+const useLineText = computed(() => {
+  if (!currentHex.value?.use) return '';
+  if (mutatedLines.value.length !== 6) return '';
+  return currentHex.value.use.replace(/^用九：|^用六：/, '');
+});
 
 const goHome = () => {
   uni.reLaunch({

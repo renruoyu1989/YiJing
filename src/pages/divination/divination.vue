@@ -14,8 +14,8 @@
             class="coin-wrapper" 
             :class="{ 'tossing': isTossing }">
         <view class="coin" :class="{ 'is-back': coin === 2 }">
-          <image src="/static/coin_front.png" class="coin-face front" mode="aspectFit"></image>
-          <image src="/static/coin_back.png" class="coin-face back" mode="aspectFit"></image>
+          <image src="/static/coin_front.png" class="coin-face front" mode="aspectFill"></image>
+          <image src="/static/coin_back.png" class="coin-face back" mode="aspectFill"></image>
         </view>
       </view>
     </view>
@@ -183,6 +183,7 @@ const handleToss = async () => {
     width: 100%;
     height: 100%;
     backface-visibility: hidden;
+    border-radius: 50%;
     
     &.back {
       transform: rotateX(180deg);
