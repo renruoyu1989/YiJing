@@ -1,0 +1,31 @@
+{
+	"pages": [
+		{
+			"path": "pages/index/index",
+			"style": {
+				"navigationBarTitleText": "易心",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/divination/divination",
+			"style": {
+				"navigationBarTitleText": "诚心起卦",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/result/result",
+			"style": {
+				"navigationBarTitleText": "解卦",
+				"navigationStyle": "custom"
+			}
+		}
+	],
+	"globalStyle": {
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "易心",
+		"navigationBarBackgroundColor": "#F7F5F0",
+		"backgroundColor": "#F7F5F0"
+	}
+}
