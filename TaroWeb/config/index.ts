@@ -36,7 +36,7 @@ export default {
     }
   },
   h5: {
-    publicPath: '/',
+    publicPath: process.env.NODE_ENV === 'production' ? './' : '/',
     staticDirectory: 'static',
     devServer: {
       client: {

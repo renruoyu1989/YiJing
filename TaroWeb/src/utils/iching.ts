@@ -31,6 +31,23 @@ export function isMovingLine(line: LineValue): boolean {
   return line === 6 || line === 9
 }
 
+export function lineKindName(line: LineValue): '老阴' | '少阳' | '少阴' | '老阳' {
+  if (line === 6) return '老阴'
+  if (line === 7) return '少阳'
+  if (line === 8) return '少阴'
+  return '老阳'
+}
+
+export function changedLine(line: LineValue): LineValue {
+  if (line === 6) return 7
+  if (line === 9) return 8
+  return line
+}
+
+export function changedLines(lines: readonly LineValue[]): LineValue[] {
+  return lines.map(changedLine)
+}
+
 export function tossThreeCoins(): [CoinValue, CoinValue, CoinValue] {
   return [tossCoin(), tossCoin(), tossCoin()]
 }
@@ -40,4 +57,3 @@ export function coinsToLine(coins: readonly CoinValue[]): LineValue {
   if (sum === 6 || sum === 7 || sum === 8 || sum === 9) return sum
   return 7
 }
-

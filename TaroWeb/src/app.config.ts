@@ -1,5 +1,10 @@
 export default defineAppConfig({
-  pages: ['pages/index/index', 'pages/divination/index', 'pages/result/index'],
+  pages: [
+    'pages/index/index', 
+    'pages/divination/index', 
+    'pages/result/index',
+    'pages/interpretation/index'
+  ],
   window: {
     backgroundTextStyle: 'light',
     navigationBarBackgroundColor: '#F7F5F0',

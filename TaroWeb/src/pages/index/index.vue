@@ -8,15 +8,59 @@
     </view>
 
     <view class="bottom">
-      <nut-button type="primary" block @click="goDivination">诚心起卦</nut-button>
+      <nut-button type="primary" block @click="openTopicSelect">诚心起卦</nut-button>
+    </view>
+
+    <view v-if="showTopicSelect" class="overlay" @tap="closeTopicSelect">
+      <view class="sheet" @tap.stop>
+        <view class="sheet__title">请选择求问方向</view>
+        <view class="sheet__sub">诚心诚意，一事一测</view>
+        <view class="topic-grid">
+          <view v-for="t in topics" :key="t" class="topic-btn">
+            <nut-button 
+              size="normal" 
+              block 
+              :type="t === selectedTopic ? 'primary' : 'default'" 
+              @click="handleSelect(t)"
+            >
+              {{ t }}
+            </nut-button>
+          </view>
+        </view>
+        <view class="sheet__action">
+          <nut-button block type="info" :disabled="!selectedTopic" @click="confirmStart">开始起卦</nut-button>
+        </view>
+      </view>
     </view>
   </view>
 </template>
 
 <script setup lang="ts">
 import Taro from '@tarojs/taro'
+import { ref } from 'vue'
+import { useDivinationStore } from '@/stores/divination'
 
-function goDivination() {
+const store = useDivinationStore()
+const showTopicSelect = ref(false)
+const selectedTopic = ref('综合')
+const topics = ['综合', '爱情', '事业', '学业', '财运', '健康', '人际'] as const
+
+function openTopicSelect() {
+  showTopicSelect.value = true
+}
+
+function closeTopicSelect() {
+  showTopicSelect.value = false
+}
+
+function handleSelect(t: string) {
+  selectedTopic.value = t
+}
+
+function confirmStart() {
+  store.reset()
+  store.setTopic(selectedTopic.value)
+  showTopicSelect.value = false
   Taro.navigateTo({ url: '/pages/divination/index' })
 }
 </script>
@@ -44,7 +88,7 @@ function goDivination() {
   border-radius: 50%;
   overflow: hidden;
   position: relative;
-  background: linear-gradient(180deg, #111111 0% 50%, #ffffff 50% 100%);
+  background: linear-gradient(90deg, #111111 50%, #ffffff 50%);
   animation: spin 12s linear infinite;
   box-shadow: 0 14px 40px rgba(0, 0, 0, 0.08);
 }
@@ -58,6 +102,7 @@ function goDivination() {
   height: 110px;
   border-radius: 50%;
   transform: translateX(-50%);
+  z-index: 1;
 }
 
 .taiji::before {
@@ -77,6 +122,7 @@ function goDivination() {
   height: 26px;
   border-radius: 50%;
   transform: translateX(-50%);
+  z-index: 2;
 }
 
 .taiji__dot--top {
@@ -94,6 +140,7 @@ function goDivination() {
   left: 20px;
   right: 20px;
   bottom: 26px;
+  z-index: 10;
 }
 
 @keyframes spin {
@@ -103,5 +150,58 @@ function goDivination() {
   to {
     transform: rotate(360deg);
   }
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.42);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 18px 16px 18px;
+  box-sizing: border-box;
+  z-index: 100;
+}
+
+.sheet {
+  width: 100%;
+  max-width: 520px;
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 20px 16px 16px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sheet__title {
+  text-align: center;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.sheet__sub {
+  text-align: center;
+  font-size: 14px;
+  color: #666;
+  margin-top: -8px;
+  margin-bottom: 4px;
+}
+
+.topic-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.topic-btn {
+  width: calc((100% - 12px) / 2);
+}
+
+.sheet__action {
+  margin-top: 8px;
 }
 </style>
