@@ -1,5 +1,5 @@
 <template>
-  <view class="page">
+  <view class="page" :style="{ paddingTop: headerPadding }">
     <view class="card highlight-card">
       <view class="card__title">大师解卦（{{ currentTopic }}）</view>
       <view class="card__text">
@@ -23,7 +23,7 @@
 
 <script setup lang="ts">
 import Taro from '@tarojs/taro'
-import { computed } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useDivinationStore } from '@/stores/divination'
 import { generateRichInterpretation, type Topic } from '@/utils/interpretationHelper'
 
@@ -32,6 +32,7 @@ definePageConfig({
 })
 
 const store = useDivinationStore()
+const headerPadding = ref('0px')
 
 const currentLines = computed(() => store.lines)
 const currentTopic = computed(() => store.topic || '综合')
@@ -43,6 +44,12 @@ const richInterpretation = computed(() => {
 const richInterpretationParagraphs = computed(() => {
   if (!richInterpretation.value) return []
   return richInterpretation.value.split('\n')
+})
+
+onMounted(() => {
+  const systemInfo = Taro.getSystemInfoSync()
+  const statusBarHeight = systemInfo.statusBarHeight || 0
+  headerPadding.value = `${statusBarHeight + 10}px`
 })
 
 function goBack() {
@@ -61,7 +68,7 @@ function goHome() {
 .page {
   min-height: 100vh;
   background: $bg-color;
-  padding: 28px 20px 150px;
+  padding: 0 20px 150px;
   box-sizing: border-box;
 }
 

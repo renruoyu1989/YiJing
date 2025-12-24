@@ -1,5 +1,5 @@
 <template>
-  <view class="page">
+  <view class="page" :style="{ paddingTop: headerPadding }">
     <view class="hexagram">
       <view v-for="(line, idx) in topDownLines" :key="idx" class="line" :class="lineClass(line)">
         <view v-if="isYang(line)" class="line__yang">
@@ -72,7 +72,7 @@
 
 <script setup lang="ts">
 import Taro, { useDidShow } from '@tarojs/taro'
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import type { LineValue } from '@/utils/iching'
 import { changedLines, isMovingLine, lineKindName, linesToSymbol } from '@/utils/iching'
 import { findHexagramBySymbol } from '@/data/hexagrams'
@@ -80,6 +80,7 @@ import { useDivinationStore } from '@/stores/divination'
 
 const store = useDivinationStore()
 const currentLines = ref<LineValue[]>([])
+const headerPadding = ref('0px')
 
 const trigramMap: Record<string, string> = {
   '111': '天',
@@ -93,6 +94,12 @@ const trigramMap: Record<string, string> = {
 }
 
 const yaoRank = ['初', '二', '三', '四', '五', '上'] as const
+
+onMounted(() => {
+  const systemInfo = Taro.getSystemInfoSync()
+  const statusBarHeight = systemInfo.statusBarHeight || 0
+  headerPadding.value = `${statusBarHeight + 10}px`
+})
 
 useDidShow(() => {
   if (store.lines.length !== 6) {
@@ -322,7 +329,7 @@ function goToInterpretation() {
 .page {
   min-height: 100vh;
   background: $bg-color;
-  padding: 28px 20px 150px;
+  padding: 0 20px 150px;
   box-sizing: border-box;
 }
 

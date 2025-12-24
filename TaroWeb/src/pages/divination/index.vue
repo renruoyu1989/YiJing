@@ -1,13 +1,14 @@
 <template>
-  <view class="page">
+  <view class="page" :style="{ paddingTop: headerPadding }">
     <view class="coins">
       <view v-for="(coin, idx) in coins" :key="idx" class="coin-wrap">
         <view
           class="coin"
           :class="{
-            'coin--flipping': isFlipping,
-            'coin--back': !isFlipping && coin === 2
+            'coin--flipping': flippingState[idx],
+            'coin--back': !flippingState[idx] && coin === 2
           }"
+          :style="{ animationDuration: flippingDuration[idx] }"
         >
           <view class="coin__face coin__face--front">
             <image class="coin__img" :src="coinFrontSrc" mode="aspectFill" />
@@ -37,8 +38,8 @@
     </view>
 
     <view class="bottom">
-      <nut-button type="primary" block :disabled="isFlipping || lines.length >= 6" @click="tossOneLine">
-        掷一爻
+      <nut-button type="primary" block :disabled="isAnyFlipping || lines.length >= 6" @click="tossOneLine">
+        掷一爻 (摇一摇)
       </nut-button>
       <view class="hint">{{ hintText }}</view>
     </view>
@@ -47,7 +48,7 @@
 
 <script setup lang="ts">
 import Taro, { useDidShow } from '@tarojs/taro'
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
 import type { CoinValue, LineValue } from '@/utils/iching'
 import { coinsToLine, isMovingLine, tossThreeCoins } from '@/utils/iching'
 import { useDivinationStore } from '@/stores/divination'
@@ -55,20 +56,73 @@ import { useDivinationStore } from '@/stores/divination'
 const store = useDivinationStore()
 
 const coinFrontSrc =
-  'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMjAwIj4KICA8ZGVmcz4KICAgIDxyYWRpYWxHcmFkaWVudCBpZD0iZyIgY3g9IjMwJSIgY3k9IjMwJSIgcj0iODAlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI2ZmZjRkNiIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjQ1JSIgc3RvcC1jb2xvcj0iI2UyYjA2YSIvPgogICAgICA8c3RvcCBvZmZzZXQ9Ijc4JSIgc3RvcC1jb2xvcj0iI2I4N2IzZiIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiM4ZDVhMmIiLz4KICAgIDwvcmFkaWFsR3JhZGllbnQ+CiAgICA8cmFkaWFsR3JhZGllbnQgaWQ9ImcyIiBjeD0iMzUlIiBjeT0iMzUlIiByPSI3MCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjZmZmOWVhIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iNTUlIiBzdG9wLWNvbG9yPSIjZWZjODhhIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iI2IwN2E0MCIvPgogICAgPC9yYWRpYWxHcmFkaWVudD4KICA8L2RlZnM+CiAgPGNpcmNsZSBjeD0iMTAwIiBjeT0iMTAwIiByPSI5OCIgZmlsbD0idXJsKCNnKSIvPgogIDxjaXJjbGUgY3g9IjEwMCIgY3k9IjEwMCIgcj0iOTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZkM2YxYSIgc3Ryb2tlLXdpZHRoPSIzIiBvcGFjaXR5PSIwLjY1Ii8+CiAgPGNpcmNsZSBjeD0iMTAwIiBjeT0iMTAwIiByPSI3MiIgZmlsbD0idXJsKCNnMikiLz4KICA8Y2lyY2xlIGN4PSIxMDAiIGN5PSIxMDAiIHI9IjcwIiBmaWxsPSJub25lIiBzdHJva2U9IiM3YTRhMjAiIHN0cm9rZS13aWR0aD0iMiIgb3BhY2l0eT0iMC40NSIvPgogIDxyZWN0IHg9Ijc4IiB5PSI3OCIgd2lkdGg9IjQ0IiBoZWlnaHQ9IjQ0IiByeD0iNSIgZmlsbD0iIzVhM2ExZCIgb3BhY2l0eT0iMC4yMiIvPgogIDxyZWN0IHg9IjgxIiB5PSI4MSIgd2lkdGg9IjM4IiBoZWlnaHQ9IjM4IiByeD0iNCIgZmlsbD0iIzJiMWIwZiIgb3BhY2l0eT0iMC4zNSIvPgogIDxyZWN0IHg9IjgyIiB5PSI4MiIgd2lkdGg9IjM2IiBoZWlnaHQ9IjM2IiByeD0iNCIgZmlsbD0iIzFiMTIwYSIgb3BhY2l0eT0iMC41NSIvPgogIDx0ZXh0IHg9IjEwMCIgeT0iNjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc2l6ZT0iMjIiIGZvbnQtZmFtaWx5PSJTb25ndGkgU0MsIFNpbVN1biwgc2VyaWYiIGZpbGw9IiMyYTE2MDgiIG9wYWNpdHk9IjAuOSI+5Lm+PC90ZXh0PgogIDx0ZXh0IHg9IjEwMCIgeT0iMTUwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjIyIiBmb250LWZhbWlseT0iU29uZ3RpIFNDLCBTaW1TdW4sIHNlcmlmIiBmaWxsPSIjMmExNjA4IiBvcGFjaXR5PSIwLjkiPumahjwvdGV4dD4KICA8dGV4dCB4PSI1NiIgeT0iMTEyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjIyIiBmb250LWZhbWlseT0iU29uZ3RpIFNDLCBTaW1TdW4sIHNlcmlmIiBmaWxsPSIjMmExNjA4IiBvcGFjaXR5PSIwLjkiPumAmjwvdGV4dD4KICA8dGV4dCB4PSIxNDQiIHk9IjExMiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSIyMiIgZm9udC1mYW1pbHk9IlNvbmd0aSBTQywgU2ltU3VuLCBzZXJpZiIgZmlsbD0iIzJhMTYwOCIgb3BhY2l0eT0iMC45Ij7lrp08L3RleHQ+Cjwvc3ZnPg=='
-const coinBackSrc =
-  'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMjAwIj4KICA8ZGVmcz4KICAgIDxyYWRpYWxHcmFkaWVudCBpZD0iZyIgY3g9IjMwJSIgY3k9IjMwJSIgcj0iODAlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI2ZmZjZlMSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjQ1JSIgc3RvcC1jb2xvcj0iI2U2Yjc3NSIvPgogICAgICA8c3RvcCBvZmZzZXQ9Ijc4JSIgc3RvcC1jb2xvcj0iI2MzODc0YiIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiM5MTU5MmIiLz4KICAgIDwvcmFkaWFsR3JhZGllbnQ+CiAgICA8cmFkaWFsR3JhZGllbnQgaWQ9ImcyIiBjeD0iMzUlIiBjeT0iMzUlIiByPSI3MCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjZmZmYWYwIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iNTglIiBzdG9wLWNvbG9yPSIjZjJkMTljIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iI2I4N2Y0NSIvPgogICAgPC9yYWRpYWxHcmFkaWVudD4KICA8L2RlZnM+CiAgPGNpcmNsZSBjeD0iMTAwIiBjeT0iMTAwIiByPSI5OCIgZmlsbD0idXJsKCNnKSIvPgogIDxjaXJjbGUgY3g9IjEwMCIgY3k9IjEwMCIgcj0iOTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZkM2YxYSIgc3Ryb2tlLXdpZHRoPSIzIiBvcGFjaXR5PSIwLjYyIi8+CiAgPGNpcmNsZSBjeD0iMTAwIiBjeT0iMTAwIiByPSI3MiIgZmlsbD0idXJsKCNnMikiLz4KICA8Y2lyY2xlIGN4PSIxMDAiIGN5PSIxMDAiIHI9IjcwIiBmaWxsPSJub25lIiBzdHJva2U9IiM3YTRhMjAiIHN0cm9rZS13aWR0aD0iMiIgb3BhY2l0eT0iMC40MiIvPgogIDxjaXJjbGUgY3g9IjEwMCIgY3k9IjEwMCIgcj0iNDQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTYwOCIgc3Ryb2tlLXdpZHRoPSIyIiBvcGFjaXR5PSIwLjI1Ii8+CiAgPHBhdGggZD0iTTYwIDEyMGMxOC00MCA2Mi00OCA4MC0xMmM5IDE4LTIgMzktMjEgNDRjLTIyIDYtNDQtOS01MC0zMnoiIGZpbGw9IiMyYTE2MDgiIG9wYWNpdHk9IjAuMTIiLz4KICA8dGV4dCB4PSIxMDAiIHk9IjExMiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSIyMCIgZm9udC1mYW1pbHk9IlNvbmd0aSBTQywgU2ltU3VuLCBzZXJpZiIgZmlsbD0iIzJhMTYwOCIgb3BhY2l0eT0iMC44NSI+5aSp5LiL5aSq5bmzPC90ZXh0Pgo8L3N2Zz4='
+  'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMjAwIj48ZGVmcz48cmFkaWFsR3JhZGllbnQgaWQ9ImciIGN4PSI1MCUiIGN5PSI1MCUiIHI9IjUwJSI+PHN0b3Agb2Zmc2V0PSI3MCUiIHN0b3AtY29sb3I9IiNlMmIwNmEiLz48c3RvcCBvZmZzZXQ9Ijk1JSIgc3RvcC1jb2xvcj0iIzhkNWEyYiIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzVhM2ExZCIvPjwvcmFkaWFsR3JhZGllbnQ+PG1hc2sgaWQ9Im0iPjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSJ3aGl0ZSIvPjxyZWN0IHg9Ijc0IiB5PSI3NCIgd2lkdGg9IjUyIiBoZWlnaHQ9IjUyIiBmaWxsPSJibGFjayIvPjwvbWFzaz48L2RlZnM+PGNpcmNsZSBjeD0iMTAwIiBjeT0iMTAwIiByPSI5OCIgZmlsbD0idXJsKCNnKSIgbWFzaz0idXJsKCNtKSIvPjxjaXJjbGUgY3g9IjEwMCIgY3k9IjEwMCIgcj0iOTgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzVhM2ExZCIgc3Ryb2tlLXdpZHRoPSI0Ii8+PHJlY3QgeD0iNzAiIHk9IjcwIiB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzVhM2ExZCIgc3Ryb2tlLXdpZHRoPSIzIiByeD0iMiIgbWFzaz0idXJsKCNtKSIvPjx0ZXh0IHg9IjEwMCIgeT0iNTUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtZmFtaWx5PSJTVEthaXRpLCBLYWlUaSwgc2VyaWYiIGZvbnQtc2l6ZT0iMzgiIGZpbGw9IiM1YTNhMWQiIGZvbnQtd2VpZ2h0PSJib2xkIj7mtKo8L3RleHQ+PHRleHQgeD0iMTAwIiB5PSIxNzgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtZmFtaWx5PSJTVEthaXRpLCBLYWlUaSwgc2VyaWYiIGZvbnQtc2l6ZT0iMzgiIGZpbGw9IiM1YTNhMWQiIGZvbnQtd2VpZ2h0PSJib2xkIj7mraY8L3RleHQ+PHRleHQgeD0iMTYyIiB5PSIxMTUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtZmFtaWx5PSJTVEthaXRpLCBLYWlUaSwgc2VyaWYiIGZvbnQtc2l6ZT0iMzgiIGZpbGw9IiM1YTNhMWQiIGZvbnQtd2VpZ2h0PSJib2xkIj7pgJo8L3RleHQ+PHRleHQgeD0iMzgiIHk9IjExNSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9IlNUS2FpdGksIEthaVRpLCBzZXJpZiIgZm9udC1zaXplPSIzOCIgZmlsbD0iIzVhM2ExZCIgZm9udC13ZWlnaHQ9ImJvbGQiPuWvtjwvdGV4dD48L3N2Zz4='
 
-const isFlipping = ref(false)
+const coinBackSrc =
+  'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMjAwIj48ZGVmcz48cmFkaWFsR3JhZGllbnQgaWQ9ImcyIiBjeD0iNTAlIiBjeT0iNTAlIiByPSI1MCUiPjxzdG9wIG9mZnNldD0iNzAlIiBzdG9wLWNvbG9yPSIjZTJiMDZhIi8+PHN0b3Agb2Zmc2V0PSI5NSUiIHN0b3AtY29sb3I9IiM4ZDVhMmIiLz48c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiM1YTNhMWQiLz48L3JhZGlhbEdyYWRpZW50PjxtYXNrIGlkPSJtMiI+PHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IndoaXRlIi8+PHJlY3QgeD0iNzQiIHk9Ijc0IiB3aWR0aD0iNTIiIGhlaWdodD0iNTIiIGZpbGw9ImJsYWNrIi8+PC9tYXNrPjwvZGVmcz48Y2lyY2xlIGN4PSIxMDAiIGN5PSIxMDAiIHI9Ijk4IiBmaWxsPSJ1cmwoI2cyKSIgbWFzaz0idXJsKCNtMikiLz48Y2lyY2xlIGN4PSIxMDAiIGN5PSIxMDAiIHI9Ijk4IiBmaWxsPSJub25lIiBzdHJva2U9IiM1YTNhMWQiIHN0cm9rZS13aWR0aD0iNCIvPjxyZWN0IHg9IjcwIiB5PSI3MCIgd2lkdGg9IjYwIiBoZWlnaHQ9IjYwIiBmaWxsPSJub25lIiBzdHJva2U9IiM1YTNhMWQiIHN0cm9rZS13aWR0aD0iMyIgcng9IjIiIG1hc2s9InVybCgjbTIpIi8+PHBhdGggZD0iTTUwIDEyMCBRODAgMTUwIDE1MCAxMjAiIHN0cm9rZT0iIzVhM2ExZCIgc3Ryb2tlLXdpZHRoPSIzIiBmaWxsPSJub25lIiBvcGFjaXR5PSIwLjYiLz48Y2lyY2xlIGN4PSIxMzAiIGN5PSI4MCIgcj0iMTUiIHN0cm9rZT0iIzVhM2ExZCIgc3Ryb2tlLXdpZHRoPSIzIiBmaWxsPSJub25lIiBvcGFjaXR5PSIwLjYiLz48cGF0aCBkPSJNMTMwIDk1IEwxMzAgMTIwIiBzdHJva2U9IiM1YTNhMWQiIHN0cm9rZS13aWR0aD0iMyIgZmlsbD0ibm9uZSIgb3BhY2l0eT0iMC42Ii8+PC9zdmc+'
+
+const headerPadding = ref('0px')
+const flippingState = ref([false, false, false])
+const flippingDuration = ref(['0s', '0s', '0s'])
 const coins = ref<CoinValue[]>([3, 3, 3])
 const lines = ref<LineValue[]>([])
 
+const isAnyFlipping = computed(() => flippingState.value.some(s => s))
+
+// Shake detection variables
+let lastX = 0
+let lastY = 0
+let lastZ = 0
+let lastTime = 0
+const SHAKE_THRESHOLD = 800
+const MIN_TIME_BETWEEN_SHAKES = 1000
+
 useDidShow(() => {
-  store.reset()
-  isFlipping.value = false
+  // Do NOT reset topic here
+  store.setLines([])
+  flippingState.value = [false, false, false]
   coins.value = [3, 3, 3]
   lines.value = []
 })
+
+onMounted(() => {
+  const systemInfo = Taro.getSystemInfoSync()
+  const statusBarHeight = systemInfo.statusBarHeight || 0
+  headerPadding.value = `${statusBarHeight + 10}px`
+
+  startShakeDetection()
+})
+
+onUnmounted(() => {
+  stopShakeDetection()
+})
+
+function startShakeDetection() {
+  Taro.startAccelerometer({ interval: 'game' })
+  Taro.onAccelerometerChange((res) => {
+    const currentTime = Date.now()
+    if ((currentTime - lastTime) > 100) {
+      const diffTime = currentTime - lastTime
+      lastTime = currentTime
+      const x = res.x
+      const y = res.y
+      const z = res.z
+      const speed = Math.abs(x + y + z - lastX - lastY - lastZ) / diffTime * 10000
+
+      if (speed > SHAKE_THRESHOLD) {
+        tossOneLine()
+      }
+
+      lastX = x
+      lastY = y
+      lastZ = z
+    }
+  })
+}
+
+function stopShakeDetection() {
+  Taro.stopAccelerometer()
+}
 
 const hintText = computed(() => {
   if (lines.value.length >= 6) return '卦成，正在解卦…'
@@ -95,27 +149,47 @@ function lineClass(line: LineValue) {
 }
 
 function tossOneLine() {
-  if (isFlipping.value) return
+  if (isAnyFlipping.value) return
   if (lines.value.length >= 6) return
 
   const nextCoins = tossThreeCoins()
   const nextLine = coinsToLine(nextCoins)
 
-  isFlipping.value = true
   Taro.vibrateShort()
 
-  setTimeout(() => {
-    coins.value = [...nextCoins]
-    lines.value = [...lines.value, nextLine]
-    isFlipping.value = false
+  // Randomize duration for natural feel
+  const durations = [
+    800 + Math.random() * 400,
+    1200 + Math.random() * 400,
+    1600 + Math.random() * 400
+  ]
+  
+  coins.value.forEach((_, idx) => {
+    flippingDuration.value[idx] = `${durations[idx]}ms`
+    flippingState.value[idx] = true
+  })
 
+  const maxDuration = Math.max(...durations)
+  
+  durations.forEach((duration, idx) => {
+    setTimeout(() => {
+      flippingState.value[idx] = false
+      const newCoins = [...coins.value]
+      newCoins[idx] = nextCoins[idx]
+      coins.value = newCoins
+    }, duration)
+  })
+
+  setTimeout(() => {
+    lines.value = [...lines.value, nextLine]
+    
     if (lines.value.length >= 6) {
       store.setLines(lines.value)
       setTimeout(() => {
         Taro.redirectTo({ url: '/pages/result/index' })
-      }, 200)
+      }, 500)
     }
-  }, 1000)
+  }, maxDuration + 50)
 }
 </script>
 
@@ -125,7 +199,7 @@ function tossOneLine() {
 .page {
   min-height: 100vh;
   background: $bg-color;
-  padding: 28px 20px 150px;
+  padding: 0 20px 150px;
   box-sizing: border-box;
 }
 
@@ -133,7 +207,7 @@ function tossOneLine() {
   display: flex;
   justify-content: center;
   gap: 18px;
-  margin-top: 14px;
+  margin-top: 15vh;
 }
 
 .coin-wrap {
@@ -153,7 +227,7 @@ function tossOneLine() {
 }
 
 .coin--flipping {
-  animation: coinFlip 1s ease-in-out;
+  animation: coinFlip 1s ease-out forwards;
 }
 
 .coin__face {
@@ -183,7 +257,7 @@ function tossOneLine() {
     transform: rotateX(0deg);
   }
   100% {
-    transform: rotateX(720deg);
+    transform: rotateX(1080deg);
   }
 }
 
@@ -256,7 +330,7 @@ function tossOneLine() {
   position: fixed;
   left: 20px;
   right: 20px;
-  bottom: 26px;
+  bottom: 80px;
 }
 
 .hint {

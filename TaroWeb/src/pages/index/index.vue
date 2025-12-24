@@ -1,5 +1,5 @@
 <template>
-  <view class="page">
+  <view class="page" :style="{ paddingTop: headerPadding }">
     <view class="center">
       <view class="taiji">
         <view class="taiji__dot taiji__dot--top" />
@@ -37,13 +37,20 @@
 
 <script setup lang="ts">
 import Taro from '@tarojs/taro'
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useDivinationStore } from '@/stores/divination'
 
 const store = useDivinationStore()
 const showTopicSelect = ref(false)
 const selectedTopic = ref('综合')
 const topics = ['综合', '爱情', '事业', '学业', '财运', '健康', '人际'] as const
+const headerPadding = ref('0px')
+
+onMounted(() => {
+  const systemInfo = Taro.getSystemInfoSync()
+  const statusBarHeight = systemInfo.statusBarHeight || 0
+  headerPadding.value = `${statusBarHeight + 10}px`
+})
 
 function openTopicSelect() {
   showTopicSelect.value = true
@@ -58,7 +65,7 @@ function handleSelect(t: string) {
 }
 
 function confirmStart() {
-  store.reset()
+  store.setLines([])
   store.setTopic(selectedTopic.value)
   showTopicSelect.value = false
   Taro.navigateTo({ url: '/pages/divination/index' })
@@ -71,7 +78,7 @@ function confirmStart() {
 .page {
   min-height: 100vh;
   background: $bg-color;
-  padding: 24px 20px 110px;
+  padding: 0 20px 110px;
   box-sizing: border-box;
 }
 
