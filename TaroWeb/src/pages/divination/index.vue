@@ -181,14 +181,14 @@ function lineClass(line: LineValue) {
 }
 
 function playTossSound() {
-  if (tossAudioContext) {
+  if (settingsStore.enableBgm && tossAudioContext) {
     tossAudioContext.stop()
     tossAudioContext.play()
   }
 }
 
 function playStopSound() {
-  if (stopAudioContext) {
+  if (settingsStore.enableBgm && stopAudioContext) {
     stopAudioContext.stop()
     stopAudioContext.play()
   }
@@ -240,7 +240,6 @@ function tossOneLine() {
 .page {
   height: 100vh;
   overflow: hidden;
-  touch-action: none; /* Prevent all touch-based scrolling and dragging */
   background: $bg-color;
   padding: 0 20px 150px;
   box-sizing: border-box;

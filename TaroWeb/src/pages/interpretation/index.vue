@@ -88,6 +88,8 @@ function goHome() {
 
 .page {
   min-height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
   background: $bg-color;
   padding: 0 20px 150px;
   box-sizing: border-box;

@@ -19,9 +19,9 @@ export function initBgm() {
     const audio = new Audio()
     audio.src = BGM_URL
     audio.loop = true
-    // Try to autoplay by default
-    audio.autoplay = true
-    
+    // Don't autoplay - respect user settings
+    audio.autoplay = false
+
     // Attach to window to prevent GC
     // @ts-ignore
     window._bgm = audio
@@ -29,7 +29,7 @@ export function initBgm() {
     audio.addEventListener('error', (e) => {
       console.error('BGM Error:', e)
     })
-    
+
     audio.addEventListener('play', () => console.log('BGM Started Playing'))
     audio.addEventListener('pause', () => console.log('BGM Paused'))
     audio.addEventListener('ended', () => {
@@ -38,9 +38,11 @@ export function initBgm() {
     })
 
     bgmContext = audio
-    
-    // Try WeChat specific autoplay immediately
-    tryWeixinAutoPlay()
+
+    // Only try WeChat autoplay if enabled
+    if (settings.enableBgm) {
+      tryWeixinAutoPlay()
+    }
   } else {
     // Taro / Mini Program Implementation
     bgmContext = Taro.createInnerAudioContext()
@@ -55,7 +57,7 @@ export function initBgm() {
     bgmContext.onPlay(() => {
       console.log('BGM Started Playing')
     })
-    
+
     bgmContext.onStop(() => {
       console.log('BGM Stopped')
     })
@@ -69,16 +71,10 @@ export function initBgm() {
       playBgm()
     })
   }
-  
-  // Try to play if enabled
+
+  // Only play if enabled
   if (settings.enableBgm) {
-    // Attempt immediate play
     playBgm()
-    
-    // Backup attempt
-    setTimeout(() => {
-      playBgm()
-    }, 1000)
   }
 }
 
@@ -100,6 +96,12 @@ function tryWeixinAutoPlay() {
 }
 
 export function playBgm() {
+  // Check if BGM is enabled before playing
+  const settings = useSettingsStore()
+  if (!settings.enableBgm) {
+    return // Don't play if disabled
+  }
+
   if (!bgmContext) {
     initBgm() // Re-init if missing
   }
@@ -140,7 +142,7 @@ export function pauseBgm() {
 let unlockListenerAdded = false
 function addUnlockListener() {
   if (!isH5 || unlockListenerAdded) return
-  
+
   const unlock = () => {
     const settings = useSettingsStore()
     if (settings.enableBgm && bgmContext) {

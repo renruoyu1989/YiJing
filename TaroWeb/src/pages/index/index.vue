@@ -105,12 +105,12 @@ onMounted(() => {
 })
 
 function goToSettings() {
-  playBgm()
+  if (settingsStore.enableBgm) playBgm()
   Taro.navigateTo({ url: '/pages/settings/index' })
 }
 
 function openTopicSelect() {
-  playBgm()
+  if (settingsStore.enableBgm) playBgm()
   showTopicSelect.value = true
 }
 
@@ -119,12 +119,12 @@ function closeTopicSelect() {
 }
 
 function handleSelect(t: string) {
-  playBgm()
+  if (settingsStore.enableBgm) playBgm()
   selectedTopic.value = t
 }
 
 function confirmStart() {
-  playBgm()
+  if (settingsStore.enableBgm) playBgm()
   store.setLines([])
   store.setTopic(selectedTopic.value)
   showTopicSelect.value = false
@@ -136,7 +136,8 @@ function confirmStart() {
 @use "@/styles/tokens.scss" as *;
 
 .page {
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
   background: $bg-color;
   padding: 0 20px 110px;
   box-sizing: border-box;

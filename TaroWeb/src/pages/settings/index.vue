@@ -74,7 +74,8 @@ function goBack() {
 @use "@/styles/tokens.scss" as *;
 
 .page {
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
   background: $bg-color;
   padding: 0 20px;
   box-sizing: border-box;
