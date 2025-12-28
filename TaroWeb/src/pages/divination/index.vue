@@ -354,7 +354,7 @@ function tossOneLine() {
   position: fixed;
   left: 20px;
   right: 20px;
-  bottom: 80px;
+  bottom: 120px;
 }
 
 .hint {

@@ -15,7 +15,6 @@
 
     <view class="bottom">
       <nut-button type="primary" block @click="goBack">返回卦象</nut-button>
-      <view class="spacer" />
       <nut-button plain block @click="goHome">返回首页</nut-button>
     </view>
   </view>
