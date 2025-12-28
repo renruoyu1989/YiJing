@@ -1,16 +1,16 @@
 <template>
   <view class="page" :style="{ paddingTop: headerPadding }">
-    <view class="settings-btn" :style="{ top: headerPadding }" @click="goToSettings">
+    <view class="settings-btn" :style="{ top: btnTop }" @click="goToSettings">
       <view class="settings-icon">⚙</view>
     </view>
 
     <view class="center">
       <view class="taiji-wrapper">
+        <view class="taiji__text">{{ messages.ui.home.title }}</view>
         <view class="taiji">
           <view class="taiji__dot taiji__dot--top" />
           <view class="taiji__dot taiji__dot--bottom" />
         </view>
-        <view class="taiji__text">{{ messages.ui.home.title }}</view>
       </view>
     </view>
 
@@ -64,11 +64,27 @@ const showTopicSelect = ref(false)
 const selectedTopic = ref('general')
 const topics = ['general', 'love', 'career', 'academics', 'wealth', 'health', 'relationships'] as const
 const headerPadding = ref('0px')
+const btnTop = ref('0px')
 
 onMounted(() => {
   const systemInfo = Taro.getSystemInfoSync()
-  const statusBarHeight = systemInfo.statusBarHeight || 0
-  headerPadding.value = `${statusBarHeight + 10}px`
+  let top = systemInfo.statusBarHeight || 0
+  
+  if (process.env.TARO_ENV === 'weapp') {
+    const menuButton = Taro.getMenuButtonBoundingClientRect()
+    // Align center with capsule
+    // Capsule height is usually 32px
+    // Our button is 44px
+    top = menuButton.top + (menuButton.height - 44) / 2
+  } else {
+    top += 10
+  }
+  
+  // Ensure minimal spacing
+  top = Math.max(top, 10)
+  
+  btnTop.value = `${top}px`
+  headerPadding.value = `${top + 54}px` // 44px button + 10px margin
   
   // Try to play BGM on home page mount (backup for onLaunch)
   if (settingsStore.enableBgm) {
@@ -117,15 +133,16 @@ function confirmStart() {
 .settings-btn {
   position: fixed;
   left: 20px;
-  z-index: 200;
-  width: 40px;
-  height: 40px;
+  z-index: 999; /* Increased z-index */
+  width: 44px; /* Increased size */
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.9); /* More opaque */
   border-radius: 50%;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+  cursor: pointer; /* Add pointer cursor */
 }
 
 .settings-icon {
@@ -144,15 +161,16 @@ function confirmStart() {
 .taiji-wrapper {
   position: relative;
   width: 220px;
-  height: 220px;
+  /* height: 220px; Remove fixed height to allow stacking */
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
 }
 
 .taiji {
-  width: 100%;
-  height: 100%;
+  width: 220px;
+  height: 220px;
   border-radius: 50%;
   overflow: hidden;
   position: relative;
@@ -162,14 +180,15 @@ function confirmStart() {
 }
 
 .taiji__text {
-  position: absolute;
-  z-index: 100;
+  /* position: absolute; Remove absolute */
+  /* z-index: 100; */
   font-family: "STKaiti", "KaiTi", serif;
   font-size: 48px;
   font-weight: bold;
   color: #D4AF37; /* Gold color */
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1); /* Lighter shadow */
   pointer-events: none;
+  margin-bottom: 20px; /* Add space between text and icon */
 }
 
 .taiji::before,

@@ -15,3 +15,28 @@ page {
   --nut-text-color: #{$primary-color};
 }
 
+/* H5 Desktop Preview Mode - 9:16 Aspect Ratio */
+// @ts-ignore
+@media screen and (min-width: 500px) {
+  body {
+    max-width: 414px; /* iPhone Max width approx */
+    min-height: 100vh;
+    margin: 0 auto;
+    border-left: 1px solid #eee;
+    border-right: 1px solid #eee;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+  }
+  
+  /* Fix fixed positioning relative to body/viewport */
+  .nut-navbar--fixed,
+  .settings-btn {
+    left: 50% !important;
+    transform: translateX(-187px) !important; /* Half of max-width + left offset adjustment */
+  }
+  
+  .settings-btn {
+    transform: translateX(-190px) !important; /* 414/2 - 20px margin */
+    margin-left: 0 !important;
+  }
+}
+

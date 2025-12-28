@@ -56,6 +56,10 @@ import { computed, ref, onMounted, onUnmounted, watch } from 'vue'
 import type { CoinValue, LineValue } from '@/utils/iching'
 import { coinsToLine, isMovingLine, tossThreeCoins } from '@/utils/iching'
 import { useDivinationStore } from '@/stores/divination'
+// @ts-ignore
+import tossStartSrc from '@/assets/toss_start.mp3'
+// @ts-ignore
+import tossEndSrc from '@/assets/toss_end.mp3'
 import { useSettingsStore } from '@/stores/settings'
 import { getLocaleMessages } from '@/utils/i18n'
 
@@ -91,12 +95,25 @@ let lastTime = 0
 const SHAKE_THRESHOLD = 800
 const MIN_TIME_BETWEEN_SHAKES = 1000
 
+let tossAudioContext: Taro.InnerAudioContext | null = null
+let stopAudioContext: Taro.InnerAudioContext | null = null
+
 useDidShow(() => {
   // Do NOT reset topic here
   store.setLines([])
   flippingState.value = [false, false, false]
   coins.value = [3, 3, 3]
   lines.value = []
+  
+  // Init sound effects
+  if (!tossAudioContext) {
+    tossAudioContext = Taro.createInnerAudioContext()
+    tossAudioContext.src = tossStartSrc
+  }
+  if (!stopAudioContext) {
+    stopAudioContext = Taro.createInnerAudioContext()
+    stopAudioContext.src = tossEndSrc
+  }
 })
 
 onMounted(() => {
@@ -108,6 +125,8 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  if (tossAudioContext) tossAudioContext.destroy()
+  if (stopAudioContext) stopAudioContext.destroy()
   stopShakeDetection()
 })
 
@@ -162,53 +181,57 @@ function lineClass(line: LineValue) {
   }
 }
 
+function playTossSound() {
+  if (tossAudioContext) {
+    tossAudioContext.stop()
+    tossAudioContext.play()
+  }
+}
+
+function playStopSound() {
+  if (stopAudioContext) {
+    stopAudioContext.stop()
+    stopAudioContext.play()
+  }
+}
+
 function tossOneLine() {
-  if (isAnyFlipping.value) return
   if (lines.value.length >= 6) return
+  if (isAnyFlipping.value) return
 
-  const nextCoins = tossThreeCoins()
-  const nextLine = coinsToLine(nextCoins)
+  // Play start sound
+  playTossSound()
 
-  Taro.vibrateShort()
-
-  // Randomize duration for natural feel
-  const durations = [
-    800 + Math.random() * 400,
-    1200 + Math.random() * 400,
-    1600 + Math.random() * 400
+  // Start animation
+  flippingState.value = [true, true, true]
+  flippingDuration.value = [
+    1 + Math.random() * 0.5 + 's',
+    1 + Math.random() * 0.5 + 's',
+    1 + Math.random() * 0.5 + 's'
   ]
-  
-  coins.value.forEach((_, idx) => {
-    // Use a large enough duration so it keeps spinning until we stop it manually
-    // The CSS animation is 'infinite', so this duration is just for the lifecycle
-    // Actually, we use 'animation-duration' to control speed?
-    // No, we want constant speed. So we should fix the CSS animation duration to something fast like 0.6s
-    // and let it loop.
-    flippingDuration.value[idx] = '0.6s' 
-    flippingState.value[idx] = true
-  })
 
-  const maxDuration = Math.max(...durations)
+  // Determine result
+  const newCoins = tossThreeCoins()
   
-  durations.forEach((duration, idx) => {
-    setTimeout(() => {
-      flippingState.value[idx] = false
-      const newCoins = [...coins.value]
-      newCoins[idx] = nextCoins[idx]
-      coins.value = newCoins
-    }, duration)
-  })
-
+  // Stop after delay
   setTimeout(() => {
-    lines.value = [...lines.value, nextLine]
+    flippingState.value = [false, false, false]
+    coins.value = newCoins
     
-    if (lines.value.length >= 6) {
-      store.setLines(lines.value)
+    const newLine = coinsToLine(newCoins)
+    lines.value = [...lines.value, newLine]
+    store.setLines(lines.value)
+    
+    // Play stop sound
+    playStopSound()
+    
+    // Auto navigate if done
+    if (lines.value.length === 6) {
       setTimeout(() => {
-        Taro.redirectTo({ url: '/pages/result/index' })
-      }, 500)
+        Taro.navigateTo({ url: '/pages/result/index' })
+      }, 1500)
     }
-  }, maxDuration + 50)
+  }, 1200)
 }
 </script>
 
