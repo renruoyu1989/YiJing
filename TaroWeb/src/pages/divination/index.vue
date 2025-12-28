@@ -1,5 +1,5 @@
 <template>
-  <view class="page" :style="{ paddingTop: headerPadding }" @touchmove.stop.prevent="() => {}">
+  <view class="page" :style="{ paddingTop: headerPadding }">
     <view class="coins">
       <view v-for="(coin, idx) in coins" :key="idx" class="coin-wrap">
         <view
@@ -240,6 +240,7 @@ function tossOneLine() {
 .page {
   height: 100vh;
   overflow: hidden;
+  touch-action: none; /* Prevent all touch-based scrolling and dragging */
   background: $bg-color;
   padding: 0 20px 150px;
   box-sizing: border-box;

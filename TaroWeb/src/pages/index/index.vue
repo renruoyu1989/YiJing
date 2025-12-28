@@ -78,25 +78,24 @@ onMounted(() => {
     const menuButton = Taro.getMenuButtonBoundingClientRect()
     top = menuButton.top + (menuButton.height - 44) / 2
   } else if (process.env.TARO_ENV === 'h5') {
-    // H5 specific logic
-    // Use CSS variable if available or default
-    // We will set a value here, but the style binding will be overridden by a specific class if needed
-    top = 10 // Default fallback
+    // H5: Use safe area insets via CSS
+    top = 15
+    btnTop.value = 'calc(15px + env(safe-area-inset-top, 0px))'
+    headerPadding.value = 'calc(69px + env(safe-area-inset-top, 0px))' // 15px + 44px button + 10px margin
   } else {
-    // RN or other
+    // iOS/Android native or other platforms
+    // Add extra padding for safe area on iOS
     top += 10
+    // Ensure minimal spacing
+    top = Math.max(top, 10)
+    btnTop.value = `${top}px`
+    headerPadding.value = `${top + 54}px` // 44px button + 10px margin
   }
   
-  // Ensure minimal spacing
-  top = Math.max(top, 10)
-  
-  btnTop.value = `${top}px`
-  headerPadding.value = `${top + 54}px` // 44px button + 10px margin
-  
-  if (process.env.TARO_ENV === 'h5') {
-     // Use CSS calc for H5 to handle safe area correctly
-     // Default fallback of 15px if env() is not supported or 0
-     btnTop.value = 'calc(15px + env(safe-area-inset-top))'
+  // For non-H5 platforms, set the values if not already set
+  if (process.env.TARO_ENV !== 'h5') {
+    btnTop.value = `${top}px`
+    headerPadding.value = `${top + 54}px`
   }
 
   // Try to play BGM on home page mount (backup for onLaunch)
@@ -146,16 +145,23 @@ function confirmStart() {
 .settings-btn {
   position: fixed;
   left: 20px;
-  z-index: 10000; /* Max z-index */
-  width: 44px; /* Increased size */
+  z-index: 10000;
+  width: 44px;
   height: 44px;
+  min-width: 44px; /* Ensure minimum touch target for iOS */
+  min-height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.9); /* More opaque */
+  background: rgba(255, 255, 255, 0.95);
   border-radius: 50%;
   box-shadow: 0 2px 12px rgba(0,0,0,0.15);
-  cursor: pointer; /* Add pointer cursor */
+  cursor: pointer;
+  touch-action: manipulation; /* Improve touch responsiveness */
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  /* Ensure button is above all content */
+  pointer-events: auto;
 }
 
 .settings-icon {
