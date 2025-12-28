@@ -78,10 +78,10 @@ onMounted(() => {
     const menuButton = Taro.getMenuButtonBoundingClientRect()
     top = menuButton.top + (menuButton.height - 44) / 2
   } else if (process.env.TARO_ENV === 'h5') {
-    // H5: Use safe area insets via CSS
-    top = 15
-    btnTop.value = 'calc(15px + env(safe-area-inset-top, 0px))'
-    headerPadding.value = 'calc(69px + env(safe-area-inset-top, 0px))' // 15px + 44px button + 10px margin
+    // H5: Use safe area insets via CSS with larger offset for iOS
+    top = 70
+    btnTop.value = 'calc(70px + env(safe-area-inset-top, 0px))'
+    headerPadding.value = 'calc(124px + env(safe-area-inset-top, 0px))' // 70px + 44px button + 10px margin
   } else {
     // iOS/Android native or other platforms
     // Add extra padding for safe area on iOS
@@ -176,6 +176,7 @@ function confirmStart() {
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-top: -80px; /* Move taiji logo higher */
 }
 
 .taiji-wrapper {
