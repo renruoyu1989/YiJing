@@ -33,6 +33,10 @@
               <view class="line__bar line__bar--half" />
             </view>
           </view>
+          <view class="line-marker" v-if="line">
+            <text v-if="line === 6" class="marker-x">×</text>
+            <text v-if="line === 9" class="marker-o">○</text>
+          </view>
         </view>
       </view>
     </view>
@@ -165,7 +169,12 @@ function tossOneLine() {
   ]
   
   coins.value.forEach((_, idx) => {
-    flippingDuration.value[idx] = `${durations[idx]}ms`
+    // Use a large enough duration so it keeps spinning until we stop it manually
+    // The CSS animation is 'infinite', so this duration is just for the lifecycle
+    // Actually, we use 'animation-duration' to control speed?
+    // No, we want constant speed. So we should fix the CSS animation duration to something fast like 0.6s
+    // and let it loop.
+    flippingDuration.value[idx] = '0.6s' 
     flippingState.value[idx] = true
   })
 
@@ -227,7 +236,7 @@ function tossOneLine() {
 }
 
 .coin--flipping {
-  animation: coinFlip 1s ease-out forwards;
+  animation: coinFlip 1s linear infinite;
 }
 
 .coin__face {
@@ -282,6 +291,21 @@ function tossOneLine() {
   height: 12px;
   display: flex;
   align-items: center;
+  position: relative;
+}
+
+.line-marker {
+  position: absolute;
+  right: -24px;
+  width: 20px;
+  height: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 14px;
+  color: #8d5a2b;
+  font-weight: bold;
+  z-index: 10;
 }
 
 .line {

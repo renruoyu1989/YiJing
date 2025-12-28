@@ -49,7 +49,7 @@ const richInterpretationParagraphs = computed(() => {
 onMounted(() => {
   const systemInfo = Taro.getSystemInfoSync()
   const statusBarHeight = systemInfo.statusBarHeight || 0
-  headerPadding.value = `${statusBarHeight + 10}px`
+  headerPadding.value = `${Math.max(statusBarHeight, 20) + 44}px`
 })
 
 function goBack() {

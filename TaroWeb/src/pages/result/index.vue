@@ -98,7 +98,7 @@ const yaoRank = ['初', '二', '三', '四', '五', '上'] as const
 onMounted(() => {
   const systemInfo = Taro.getSystemInfoSync()
   const statusBarHeight = systemInfo.statusBarHeight || 0
-  headerPadding.value = `${statusBarHeight + 10}px`
+  headerPadding.value = `${Math.max(statusBarHeight, 20) + 44}px`
 })
 
 useDidShow(() => {
@@ -507,6 +507,10 @@ function goToInterpretation() {
   margin-top: 10px;
   font-size: 13px;
   color: rgba(0, 0, 0, 0.62);
+}
+
+.spacer {
+  height: 12px;
 }
 
 .pick-list {

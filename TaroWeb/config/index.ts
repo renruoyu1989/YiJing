@@ -39,6 +39,9 @@ export default {
     publicPath: process.env.NODE_ENV === 'production' ? './' : '/',
     staticDirectory: 'static',
     devServer: {
+      host: 'localhost',
+      port: 10086,
+      open: true,
       client: {
         overlay: false
       }

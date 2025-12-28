@@ -1,9 +1,12 @@
 <template>
   <view class="page" :style="{ paddingTop: headerPadding }">
     <view class="center">
-      <view class="taiji">
-        <view class="taiji__dot taiji__dot--top" />
-        <view class="taiji__dot taiji__dot--bottom" />
+      <view class="taiji-wrapper">
+        <view class="taiji">
+          <view class="taiji__dot taiji__dot--top" />
+          <view class="taiji__dot taiji__dot--bottom" />
+        </view>
+        <view class="taiji__text">易心</view>
       </view>
     </view>
 
@@ -89,15 +92,35 @@ function confirmStart() {
   justify-content: center;
 }
 
-.taiji {
+.taiji-wrapper {
+  position: relative;
   width: 220px;
   height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.taiji {
+  width: 100%;
+  height: 100%;
   border-radius: 50%;
   overflow: hidden;
   position: relative;
   background: linear-gradient(90deg, #111111 50%, #ffffff 50%);
   animation: spin 12s linear infinite;
   box-shadow: 0 14px 40px rgba(0, 0, 0, 0.08);
+}
+
+.taiji__text {
+  position: absolute;
+  z-index: 100;
+  font-family: "STKaiti", "KaiTi", serif;
+  font-size: 48px;
+  font-weight: bold;
+  color: #D4AF37; /* Gold color */
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
 }
 
 .taiji::before,
@@ -151,12 +174,13 @@ function confirmStart() {
 }
 
 @keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes counter-spin {
+  0% { transform: rotate(360deg); }
+  100% { transform: rotate(0deg); }
 }
 
 .overlay {
