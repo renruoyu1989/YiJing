@@ -129,7 +129,10 @@ function goHome() {
 }
 
 .bottom {
-  margin-top: 40px;
+  position: fixed;
+  left: 20px;
+  right: 20px;
+  bottom: 26px;
   display: flex;
   flex-direction: column;
   gap: 16px;

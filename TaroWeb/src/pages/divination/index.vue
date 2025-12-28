@@ -269,7 +269,7 @@ function tossOneLine() {
 }
 
 .coin--flipping {
-  animation: coinFlip 0.2s linear infinite;
+  animation: coinFlip 0.4s linear infinite; /* Slowed from 0.2s to 0.4s */
 }
 
 .coin__face {

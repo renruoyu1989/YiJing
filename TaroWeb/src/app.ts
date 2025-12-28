@@ -3,16 +3,24 @@ import { createPinia } from 'pinia'
 import NutUI from '@nutui/nutui-taro'
 import '@nutui/nutui-taro/dist/style.css'
 import './app.scss'
-import { initBgm } from '@/utils/bgmManager'
+import { initBgm, playBgm, pauseBgm } from '@/utils/bgmManager'
+import { useSettingsStore } from '@/stores/settings'
 
 const app = createApp({
   onLaunch() {
     initBgm()
   },
   onShow() {
-    // initBgm() - moved to onLaunch
+    // Resume BGM when app comes to foreground
+    const settings = useSettingsStore()
+    if (settings.enableBgm) {
+      playBgm()
+    }
   },
-  onHide() {},
+  onHide() {
+    // Pause BGM when app goes to background
+    pauseBgm()
+  },
   render() {
     return h('block', {}, this.$slots.default?.())
   }
