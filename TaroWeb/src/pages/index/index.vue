@@ -1,6 +1,10 @@
 <template>
   <view class="page" :style="{ paddingTop: headerPadding }">
-    <view class="settings-btn" :style="{ top: btnTop }" @click="goToSettings">
+    <view 
+      class="settings-btn" 
+      :style="{ top: btnTop }" 
+      @tap="goToSettings"
+    >
       <view class="settings-icon">⚙</view>
     </view>
 
@@ -90,7 +94,9 @@ onMounted(() => {
   headerPadding.value = `${top + 54}px` // 44px button + 10px margin
   
   if (process.env.TARO_ENV === 'h5') {
-     btnTop.value = 'calc(env(safe-area-inset-top) + 10px)'
+     // Use CSS calc for H5 to handle safe area correctly
+     // Default fallback of 15px if env() is not supported or 0
+     btnTop.value = 'calc(15px + env(safe-area-inset-top))'
   }
 
   // Try to play BGM on home page mount (backup for onLaunch)

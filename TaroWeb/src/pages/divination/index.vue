@@ -1,5 +1,5 @@
 <template>
-  <view class="page" :style="{ paddingTop: headerPadding }">
+  <view class="page" :style="{ paddingTop: headerPadding }" @touchmove.stop.prevent="() => {}">
     <view class="coins">
       <view v-for="(coin, idx) in coins" :key="idx" class="coin-wrap">
         <view
