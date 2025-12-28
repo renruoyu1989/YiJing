@@ -1,7 +1,7 @@
 <template>
   <view class="page" :style="{ paddingTop: headerPadding }">
     <view class="card highlight-card">
-      <view class="card__title">大师解卦（{{ currentTopic }}）</view>
+      <view class="card__title">{{ messages.ui.interpretation_page.title }}（{{ topicDisplayName }}）</view>
       <view class="card__text">
         <view 
           v-for="(para, idx) in richInterpretationParagraphs" 
@@ -14,30 +14,48 @@
     </view>
 
     <view class="bottom">
-      <nut-button type="primary" block @click="goBack">返回卦象</nut-button>
-      <nut-button plain block @click="goHome">返回首页</nut-button>
+      <nut-button type="primary" block @click="goBack">{{ messages.ui.interpretation_page.back_hexagram }}</nut-button>
+      <nut-button plain block @click="goHome">{{ messages.ui.interpretation_page.back_home }}</nut-button>
     </view>
   </view>
 </template>
 
 <script setup lang="ts">
 import Taro from '@tarojs/taro'
-import { computed, ref, onMounted } from 'vue'
+import { computed, ref, onMounted, watch } from 'vue'
 import { useDivinationStore } from '@/stores/divination'
+import { useSettingsStore } from '@/stores/settings'
 import { generateRichInterpretation, type Topic } from '@/utils/interpretationHelper'
+import { getLocaleMessages } from '@/utils/i18n'
 
 definePageConfig({
-  navigationBarTitleText: '大师解卦'
+  // navigationBarTitleText set dynamically
 })
 
 const store = useDivinationStore()
+const settingsStore = useSettingsStore()
 const headerPadding = ref('0px')
 
 const currentLines = computed(() => store.lines)
-const currentTopic = computed(() => store.topic || '综合')
+const currentTopic = computed(() => store.topic || 'general')
+const messages = computed(() => getLocaleMessages(settingsStore.language))
+
+watch(messages, (newVal) => {
+  Taro.setNavigationBarTitle({
+    title: newVal.ui.interpretation_page.title
+  })
+}, { immediate: true })
+
+const topicDisplayName = computed(() => {
+  return messages.value.topics[currentTopic.value as Topic] || currentTopic.value
+})
 
 const richInterpretation = computed(() => {
-  return generateRichInterpretation(currentLines.value, currentTopic.value as Topic)
+  return generateRichInterpretation(
+    currentLines.value, 
+    currentTopic.value as Topic, 
+    settingsStore.language
+  )
 })
 
 const richInterpretationParagraphs = computed(() => {
@@ -49,6 +67,10 @@ onMounted(() => {
   const systemInfo = Taro.getSystemInfoSync()
   const statusBarHeight = systemInfo.statusBarHeight || 0
   headerPadding.value = `${Math.max(statusBarHeight, 20) + 44}px`
+
+  Taro.setNavigationBarTitle({
+    title: messages.value.ui.interpretation_page.title
+  })
 })
 
 function goBack() {

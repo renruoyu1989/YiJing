@@ -3,7 +3,8 @@ export default defineAppConfig({
     'pages/index/index', 
     'pages/divination/index', 
     'pages/result/index',
-    'pages/interpretation/index'
+    'pages/interpretation/index',
+    'pages/settings/index'
   ],
   window: {
     backgroundTextStyle: 'light',

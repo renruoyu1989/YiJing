@@ -1,4 +1,4 @@
 export default definePageConfig({
-  navigationBarTitleText: '起卦'
+  // navigationBarTitleText set dynamically
 })
 

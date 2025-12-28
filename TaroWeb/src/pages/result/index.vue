@@ -14,10 +14,10 @@
     </view>
 
     <view class="title">{{ coreName }}</view>
-    <view class="sub">上卦：{{ upperName }}　下卦：{{ lowerName }}</view>
+    <view class="sub">{{ messages.ui.hexagram.upper }}：{{ upperName }}　{{ messages.ui.hexagram.lower }}：{{ lowerName }}</view>
 
     <view class="card">
-      <view class="card__title">爻象</view>
+      <view class="card__title">{{ messages.ui.hexagram.lines }}</view>
       <view class="meta-list">
         <view v-for="item in lineMetaItems" :key="item.key" class="meta-item" :class="item.isMoving ? 'meta-item--moving' : ''">
           <view class="meta-item__label">{{ item.label }}</view>
@@ -27,12 +27,12 @@
     </view>
 
     <view class="card">
-      <view class="card__title">卦辞</view>
+      <view class="card__title">{{ messages.ui.hexagram.guaci }}</view>
       <view class="card__text">{{ guaciText }}</view>
     </view>
 
     <view class="card">
-      <view class="card__title">爻辞</view>
+      <view class="card__title">{{ messages.ui.hexagram.yaoci }}</view>
       <view class="yao-list">
         <view v-for="item in yaociItems" :key="item.key" class="yao-item" :class="item.isMoving ? 'yao-item--moving' : ''">
           <view class="yao-item__label">{{ item.label }}</view>
@@ -46,15 +46,15 @@
     </view>
 
     <view v-if="hasChanging" class="card">
-      <view class="card__title">变卦</view>
+      <view class="card__title">{{ messages.ui.hexagram.changed }}</view>
       <view class="card__text">
-        {{ changedCoreName }}（上卦：{{ changedUpperName }}　下卦：{{ changedLowerName }}）
+        {{ changedCoreName }}（{{ messages.ui.hexagram.upper }}：{{ changedUpperName }}　{{ messages.ui.hexagram.lower }}：{{ changedLowerName }}）
       </view>
       <view class="card__text">{{ changedGuaciText }}</view>
     </view>
 
     <view class="card">
-      <view class="card__title">本次取辞依据</view>
+      <view class="card__title">{{ messages.ui.hexagram.source }}</view>
       <view class="pick-tip">{{ pickTip }}</view>
       <view class="pick-list">
         <view v-for="item in pickedTexts" :key="item.key" class="pick-item">
@@ -65,35 +65,36 @@
     </view>
 
     <view class="bottom">
-      <nut-button type="primary" block @click="goToInterpretation">解卦</nut-button>
+      <nut-button type="primary" block @click="goToInterpretation">{{ messages.ui.hexagram.interpret }}</nut-button>
     </view>
   </view>
 </template>
 
 <script setup lang="ts">
 import Taro, { useDidShow } from '@tarojs/taro'
-import { computed, ref, onMounted } from 'vue'
+import { computed, ref, onMounted, watch } from 'vue'
 import type { LineValue } from '@/utils/iching'
 import { changedLines, isMovingLine, lineKindName, linesToSymbol } from '@/utils/iching'
 import { findHexagramBySymbol } from '@/data/hexagrams'
 import { useDivinationStore } from '@/stores/divination'
+import { useSettingsStore } from '@/stores/settings'
+import { getLocaleMessages } from '@/utils/i18n'
 
 const store = useDivinationStore()
+const settingsStore = useSettingsStore()
+const messages = computed(() => getLocaleMessages(settingsStore.language))
+
+watch(messages, (newVal) => {
+  Taro.setNavigationBarTitle({
+    title: newVal.ui.result.title
+  })
+}, { immediate: true })
+
 const currentLines = ref<LineValue[]>([])
 const headerPadding = ref('0px')
 
-const trigramMap: Record<string, string> = {
-  '111': '天',
-  '000': '地',
-  '010': '水',
-  '101': '火',
-  '100': '雷',
-  '011': '风',
-  '001': '山',
-  '110': '泽'
-}
-
-const yaoRank = ['初', '二', '三', '四', '五', '上'] as const
+const trigramMap = computed(() => messages.value.trigram_names)
+const yaoRank = computed(() => messages.value.yao_names)
 
 onMounted(() => {
   const systemInfo = Taro.getSystemInfoSync()
@@ -112,18 +113,18 @@ useDidShow(() => {
 const topDownLines = computed(() => [...currentLines.value].reverse())
 
 const symbol = computed(() => linesToSymbol(currentLines.value))
-const hexagram = computed(() => findHexagramBySymbol(symbol.value))
+const hexagram = computed(() => findHexagramBySymbol(symbol.value, settingsStore.language))
 
 const lowerBits = computed(() => (symbol.value.length === 6 ? symbol.value.slice(0, 3) : ''))
 const upperBits = computed(() => (symbol.value.length === 6 ? symbol.value.slice(3, 6) : ''))
 
-const upperName = computed(() => trigramMap[upperBits.value] ?? '')
-const lowerName = computed(() => trigramMap[lowerBits.value] ?? '')
+const upperName = computed(() => trigramMap.value[upperBits.value as keyof typeof trigramMap.value] ?? '')
+const lowerName = computed(() => trigramMap.value[lowerBits.value as keyof typeof trigramMap.value] ?? '')
 
 const coreName = computed(() => {
   const bits = symbol.value
-  if (bits.length !== 6) return hexagram.value?.name ?? '未知卦'
-  return hexagram.value?.name ?? '未知卦'
+  if (bits.length !== 6) return hexagram.value?.name ?? messages.value.ui.hexagram.unknown
+  return hexagram.value?.name ?? messages.value.ui.hexagram.unknown
 })
 
 function isYang(line: LineValue) {
@@ -138,20 +139,20 @@ function lineClass(line: LineValue) {
 
 const guaciText = computed(() => {
   const h = hexagram.value
-  if (!h) return '暂无卦辞'
-  return h.guaci || '暂无卦辞'
+  if (!h) return messages.value.ui.hexagram.none
+  return h.guaci || messages.value.ui.hexagram.none
 })
 
 const lineMetaItems = computed(() => {
   const lines = currentLines.value
   if (lines.length !== 6) return []
   return lines.map((line, idx) => {
-    const rank = yaoRank[idx]
-    const num = isYang(line) ? '九' : '六'
+    const rank = yaoRank.value[idx]
+    const num = isYang(line) ? messages.value.ui.common.nine : messages.value.ui.common.six
     return {
       key: idx,
       label: `${rank}${num}`,
-      kind: lineKindName(line),
+      kind: messages.value.line_kinds[lineKindName(line)],
       value: line,
       isMoving: isMovingLine(line)
     }
@@ -171,9 +172,9 @@ const yaociItems = computed(() => {
   }
 
   return lines.map((line, idx) => {
-    const rank = yaoRank[idx]
-    const num = isYang(line) ? '九' : '六'
-    const label = `${rank}${num}（${lineKindName(line)}）`
+    const rank = yaoRank.value[idx]
+    const num = isYang(line) ? messages.value.ui.common.nine : messages.value.ui.common.six
+    const label = `${rank}${num}（${messages.value.line_kinds[lineKindName(line)]}）`
     const text = h.yaoci[idx] || ''
     return {
       key: idx,
@@ -205,8 +206,8 @@ const useText = computed(() => {
 const useLabel = computed(() => {
   const lines = currentLines.value
   if (lines.length !== 6) return ''
-  if (lines.every((l) => l === 9)) return '用九'
-  if (lines.every((l) => l === 6)) return '用六'
+  if (lines.every((l) => l === 9)) return messages.value.ui.hexagram.use_nine
+  if (lines.every((l) => l === 6)) return messages.value.ui.hexagram.use_six
   return ''
 })
 
@@ -219,30 +220,30 @@ const changed = computed(() => {
 })
 
 const changedSymbol = computed(() => (changed.value.length === 6 ? linesToSymbol(changed.value) : ''))
-const changedHexagram = computed(() => findHexagramBySymbol(changedSymbol.value))
+const changedHexagram = computed(() => findHexagramBySymbol(changedSymbol.value, settingsStore.language))
 
 const changedLowerBits = computed(() => (changedSymbol.value.length === 6 ? changedSymbol.value.slice(0, 3) : ''))
 const changedUpperBits = computed(() => (changedSymbol.value.length === 6 ? changedSymbol.value.slice(3, 6) : ''))
-const changedUpperName = computed(() => trigramMap[changedUpperBits.value] ?? '')
-const changedLowerName = computed(() => trigramMap[changedLowerBits.value] ?? '')
-const changedCoreName = computed(() => changedHexagram.value?.name ?? '未知卦')
-const changedGuaciText = computed(() => changedHexagram.value?.guaci ?? '暂无卦辞')
+const changedUpperName = computed(() => trigramMap.value[changedUpperBits.value as keyof typeof trigramMap.value] ?? '')
+const changedLowerName = computed(() => trigramMap.value[changedLowerBits.value as keyof typeof trigramMap.value] ?? '')
+const changedCoreName = computed(() => changedHexagram.value?.name ?? messages.value.ui.hexagram.unknown)
+const changedGuaciText = computed(() => changedHexagram.value?.guaci ?? messages.value.ui.hexagram.none)
 
 type PickedText = { key: string; label: string; text: string }
 
 const pickTip = computed(() => {
   const count = movingIndexes.value.length
-  if (count === 0) return '无变爻：以本卦卦辞为主。'
-  if (count === 1) return '一变爻：以该爻爻辞为主。'
-  if (count === 2) return '二变爻：两爻皆看，上爻为主。'
-  if (count === 3) return '三变爻：以本卦卦辞为主，兼看变卦卦辞。'
-  if (count === 4) return '四变爻：以变卦卦辞为主，兼看两静爻。'
-  if (count === 5) return '五变爻：以唯一静爻为主。'
+  if (count === 0) return messages.value.ui.pick_tips.no_moving
+  if (count === 1) return messages.value.ui.pick_tips.one_moving
+  if (count === 2) return messages.value.ui.pick_tips.two_moving
+  if (count === 3) return messages.value.ui.pick_tips.three_moving
+  if (count === 4) return messages.value.ui.pick_tips.four_moving
+  if (count === 5) return messages.value.ui.pick_tips.five_moving
   const lines = currentLines.value
-  if (lines.length !== 6) return '六变爻：以变卦卦辞为主。'
-  if (lines.every((l) => l === 9)) return '六变爻（纯老阳）：取用九。'
-  if (lines.every((l) => l === 6)) return '六变爻（纯老阴）：取用六。'
-  return '六变爻：以变卦卦辞为主。'
+  if (lines.length !== 6) return messages.value.ui.pick_tips.six_moving
+  if (lines.every((l) => l === 9)) return messages.value.ui.pick_tips.six_moving_yang
+  if (lines.every((l) => l === 6)) return messages.value.ui.pick_tips.six_moving_yin
+  return messages.value.ui.pick_tips.six_moving
 })
 
 const pickedTexts = computed<PickedText[]>(() => {
@@ -255,23 +256,23 @@ const pickedTexts = computed<PickedText[]>(() => {
   const count = idxs.length
 
   if (count === 0) {
-    return [{ key: 'guaci', label: '卦辞', text: h.guaci || '暂无卦辞' }]
+    return [{ key: 'guaci', label: messages.value.ui.hexagram.guaci, text: h.guaci || messages.value.ui.hexagram.none }]
   }
 
   if (count === 6) {
     return useText.value
       ? [{ key: 'use', label: useLabel.value, text: useText.value }]
       : ch
-        ? [{ key: 'changed-guaci', label: '变卦卦辞', text: ch.guaci || '暂无卦辞' }]
-        : [{ key: 'guaci', label: '卦辞', text: h.guaci || '暂无卦辞' }]
+        ? [{ key: 'changed-guaci', label: messages.value.ui.hexagram.changed + messages.value.ui.hexagram.guaci, text: ch.guaci || messages.value.ui.hexagram.none }]
+        : [{ key: 'guaci', label: messages.value.ui.hexagram.guaci, text: h.guaci || messages.value.ui.hexagram.none }]
   }
 
   if (count === 5) {
     const staticIdx = [0, 1, 2, 3, 4, 5].find((i) => !idxs.includes(i))
     if (staticIdx == null) return []
     const line = lines[staticIdx]
-    const rank = yaoRank[staticIdx]
-    const num = isYang(line) ? '九' : '六'
+    const rank = yaoRank.value[staticIdx]
+    const num = isYang(line) ? messages.value.ui.common.nine : messages.value.ui.common.six
     const label = `${rank}${num}`
     return [{ key: `yao-${staticIdx}`, label, text: h.yaoci[staticIdx] || '' }]
   }
@@ -279,11 +280,11 @@ const pickedTexts = computed<PickedText[]>(() => {
   if (count === 4) {
     const staticIdxs = [0, 1, 2, 3, 4, 5].filter((i) => !idxs.includes(i))
     const items: PickedText[] = []
-    if (ch) items.push({ key: 'changed-guaci', label: '变卦卦辞', text: ch.guaci || '暂无卦辞' })
+    if (ch) items.push({ key: 'changed-guaci', label: messages.value.ui.hexagram.changed + messages.value.ui.hexagram.guaci, text: ch.guaci || messages.value.ui.hexagram.none })
     staticIdxs.forEach((i) => {
       const line = lines[i]
-      const rank = yaoRank[i]
-      const num = isYang(line) ? '九' : '六'
+      const rank = yaoRank.value[i]
+      const num = isYang(line) ? messages.value.ui.common.nine : messages.value.ui.common.six
       const label = `${rank}${num}`
       items.push({ key: `yao-${i}`, label, text: h.yaoci[i] || '' })
     })
@@ -291,8 +292,8 @@ const pickedTexts = computed<PickedText[]>(() => {
   }
 
   if (count === 3) {
-    const items: PickedText[] = [{ key: 'guaci', label: '本卦卦辞', text: h.guaci || '暂无卦辞' }]
-    if (ch) items.push({ key: 'changed-guaci', label: '变卦卦辞', text: ch.guaci || '暂无卦辞' })
+    const items: PickedText[] = [{ key: 'guaci', label: messages.value.ui.hexagram.guaci, text: h.guaci || messages.value.ui.hexagram.none }]
+    if (ch) items.push({ key: 'changed-guaci', label: messages.value.ui.hexagram.changed + messages.value.ui.hexagram.guaci, text: ch.guaci || messages.value.ui.hexagram.none })
     return items
   }
 
@@ -300,8 +301,8 @@ const pickedTexts = computed<PickedText[]>(() => {
     const items: PickedText[] = []
     idxs.forEach((i) => {
       const line = lines[i]
-      const rank = yaoRank[i]
-      const num = isYang(line) ? '九' : '六'
+      const rank = yaoRank.value[i]
+      const num = isYang(line) ? messages.value.ui.common.nine : messages.value.ui.common.six
       const label = `${rank}${num}`
       items.push({ key: `yao-${i}`, label, text: h.yaoci[i] || '' })
     })
@@ -310,13 +311,13 @@ const pickedTexts = computed<PickedText[]>(() => {
 
   const i = idxs[0]
   const line = lines[i]
-  const rank = yaoRank[i]
-  const num = isYang(line) ? '九' : '六'
+  const rank = yaoRank.value[i]
+  const num = isYang(line) ? messages.value.ui.common.nine : messages.value.ui.common.six
   const label = `${rank}${num}`
   return [{ key: `yao-${i}`, label, text: h.yaoci[i] || '' }]
 })
 
-const currentTopic = computed(() => store.topic || '综合')
+const currentTopic = computed(() => store.topic || messages.value.topics.general)
 
 function goToInterpretation() {
   Taro.navigateTo({ url: '/pages/interpretation/index' })

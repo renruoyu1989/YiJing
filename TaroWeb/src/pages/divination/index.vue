@@ -43,7 +43,7 @@
 
     <view class="bottom">
       <nut-button type="primary" block :disabled="isAnyFlipping || lines.length >= 6" @click="tossOneLine">
-        掷一爻 (摇一摇)
+        {{ messages.ui.divination.toss }}
       </nut-button>
       <view class="hint">{{ hintText }}</view>
     </view>
@@ -52,12 +52,22 @@
 
 <script setup lang="ts">
 import Taro, { useDidShow } from '@tarojs/taro'
-import { computed, ref, onMounted, onUnmounted } from 'vue'
+import { computed, ref, onMounted, onUnmounted, watch } from 'vue'
 import type { CoinValue, LineValue } from '@/utils/iching'
 import { coinsToLine, isMovingLine, tossThreeCoins } from '@/utils/iching'
 import { useDivinationStore } from '@/stores/divination'
+import { useSettingsStore } from '@/stores/settings'
+import { getLocaleMessages } from '@/utils/i18n'
 
 const store = useDivinationStore()
+const settingsStore = useSettingsStore()
+const messages = computed(() => getLocaleMessages(settingsStore.language))
+
+watch(messages, (newVal) => {
+  Taro.setNavigationBarTitle({
+    title: newVal.ui.divination.title
+  })
+}, { immediate: true })
 
 const coinFrontSrc =
   'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMjAwIj48ZGVmcz48cmFkaWFsR3JhZGllbnQgaWQ9ImciIGN4PSI1MCUiIGN5PSI1MCUiIHI9IjUwJSI+PHN0b3Agb2Zmc2V0PSI3MCUiIHN0b3AtY29sb3I9IiNlMmIwNmEiLz48c3RvcCBvZmZzZXQ9Ijk1JSIgc3RvcC1jb2xvcj0iIzhkNWEyYiIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzVhM2ExZCIvPjwvcmFkaWFsR3JhZGllbnQ+PG1hc2sgaWQ9Im0iPjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSJ3aGl0ZSIvPjxyZWN0IHg9Ijc0IiB5PSI3NCIgd2lkdGg9IjUyIiBoZWlnaHQ9IjUyIiBmaWxsPSJibGFjayIvPjwvbWFzaz48L2RlZnM+PGNpcmNsZSBjeD0iMTAwIiBjeT0iMTAwIiByPSI5OCIgZmlsbD0idXJsKCNnKSIgbWFzaz0idXJsKCNtKSIvPjxjaXJjbGUgY3g9IjEwMCIgY3k9IjEwMCIgcj0iOTgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzVhM2ExZCIgc3Ryb2tlLXdpZHRoPSI0Ii8+PHJlY3QgeD0iNzAiIHk9IjcwIiB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzVhM2ExZCIgc3Ryb2tlLXdpZHRoPSIzIiByeD0iMiIgbWFzaz0idXJsKCNtKSIvPjx0ZXh0IHg9IjEwMCIgeT0iNTUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtZmFtaWx5PSJTVEthaXRpLCBLYWlUaSwgc2VyaWYiIGZvbnQtc2l6ZT0iMzgiIGZpbGw9IiM1YTNhMWQiIGZvbnQtd2VpZ2h0PSJib2xkIj7mtKo8L3RleHQ+PHRleHQgeD0iMTAwIiB5PSIxNzgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtZmFtaWx5PSJTVEthaXRpLCBLYWlUaSwgc2VyaWYiIGZvbnQtc2l6ZT0iMzgiIGZpbGw9IiM1YTNhMWQiIGZvbnQtd2VpZ2h0PSJib2xkIj7mraY8L3RleHQ+PHRleHQgeD0iMTYyIiB5PSIxMTUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtZmFtaWx5PSJTVEthaXRpLCBLYWlUaSwgc2VyaWYiIGZvbnQtc2l6ZT0iMzgiIGZpbGw9IiM1YTNhMWQiIGZvbnQtd2VpZ2h0PSJib2xkIj7pgJo8L3RleHQ+PHRleHQgeD0iMzgiIHk9IjExNSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9IlNUS2FpdGksIEthaVRpLCBzZXJpZiIgZm9udC1zaXplPSIzOCIgZmlsbD0iIzVhM2ExZCIgZm9udC13ZWlnaHQ9ImJvbGQiPuWvtjwvdGV4dD48L3N2Zz4='
@@ -129,8 +139,8 @@ function stopShakeDetection() {
 }
 
 const hintText = computed(() => {
-  if (lines.value.length >= 6) return '卦成，正在解卦…'
-  return `已得 ${lines.value.length}/6 爻`
+  if (lines.value.length >= 6) return messages.value.ui.divination.hint_done
+  return messages.value.ui.divination.hint_progress.replace('{count}', lines.value.length.toString())
 })
 
 const lineSlots = computed(() => {

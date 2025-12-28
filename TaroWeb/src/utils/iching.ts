@@ -31,11 +31,11 @@ export function isMovingLine(line: LineValue): boolean {
   return line === 6 || line === 9
 }
 
-export function lineKindName(line: LineValue): '老阴' | '少阳' | '少阴' | '老阳' {
-  if (line === 6) return '老阴'
-  if (line === 7) return '少阳'
-  if (line === 8) return '少阴'
-  return '老阳'
+export function lineKindName(line: LineValue): 'yin_old' | 'yang_young' | 'yin_young' | 'yang_old' {
+  if (line === 6) return 'yin_old'
+  if (line === 7) return 'yang_young'
+  if (line === 8) return 'yin_young'
+  return 'yang_old'
 }
 
 export function changedLine(line: LineValue): LineValue {

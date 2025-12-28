@@ -5,7 +5,7 @@ import { isMovingLine, lineToBit, linesToSymbol } from '@/utils/iching'
 export const useDivinationStore = defineStore('divination', {
   state: () => ({
     lines: [] as LineValue[],
-    topic: '综合' as string
+    topic: 'general' as string
   }),
   getters: {
     symbol(state): string {
@@ -25,7 +25,7 @@ export const useDivinationStore = defineStore('divination', {
   actions: {
     reset() {
       this.lines = []
-      this.topic = '综合'
+      this.topic = 'general'
     },
     setLines(lines: LineValue[]) {
       this.lines = [...lines]

@@ -1,23 +1,27 @@
 <template>
   <view class="page" :style="{ paddingTop: headerPadding }">
+    <view class="settings-btn" :style="{ top: headerPadding }" @click="goToSettings">
+      <view class="settings-icon">⚙</view>
+    </view>
+
     <view class="center">
       <view class="taiji-wrapper">
         <view class="taiji">
           <view class="taiji__dot taiji__dot--top" />
           <view class="taiji__dot taiji__dot--bottom" />
         </view>
-        <view class="taiji__text">易心</view>
+        <view class="taiji__text">{{ messages.ui.home.title }}</view>
       </view>
     </view>
 
     <view class="bottom">
-      <nut-button type="primary" block @click="openTopicSelect">诚心起卦</nut-button>
+      <nut-button type="primary" block @click="openTopicSelect">{{ messages.ui.home.start_btn }}</nut-button>
     </view>
 
     <view v-if="showTopicSelect" class="overlay" @tap="closeTopicSelect">
       <view class="sheet" @tap.stop>
-        <view class="sheet__title">请选择求问方向</view>
-        <view class="sheet__sub">诚心诚意，一事一测</view>
+        <view class="sheet__title">{{ messages.ui.home.select_topic_title }}</view>
+        <view class="sheet__sub">{{ messages.ui.home.select_topic_sub }}</view>
         <view class="topic-grid">
           <view v-for="t in topics" :key="t" class="topic-btn">
             <nut-button 
@@ -26,12 +30,12 @@
               :type="t === selectedTopic ? 'primary' : 'default'" 
               @click="handleSelect(t)"
             >
-              {{ t }}
+              {{ messages.topics[t] }}
             </nut-button>
           </view>
         </view>
         <view class="sheet__action">
-          <nut-button block type="info" :disabled="!selectedTopic" @click="confirmStart">开始起卦</nut-button>
+          <nut-button block type="info" :disabled="!selectedTopic" @click="confirmStart">{{ messages.ui.home.confirm_start }}</nut-button>
         </view>
       </view>
     </view>
@@ -40,22 +44,45 @@
 
 <script setup lang="ts">
 import Taro from '@tarojs/taro'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useDivinationStore } from '@/stores/divination'
+import { useSettingsStore } from '@/stores/settings'
+import { getLocaleMessages } from '@/utils/i18n'
+import { playBgm } from '@/utils/bgmManager'
 
 const store = useDivinationStore()
+const settingsStore = useSettingsStore()
+const messages = computed(() => getLocaleMessages(settingsStore.language))
+
+watch(messages, (newVal) => {
+  Taro.setNavigationBarTitle({
+    title: newVal.app.title
+  })
+}, { immediate: true })
+
 const showTopicSelect = ref(false)
-const selectedTopic = ref('综合')
-const topics = ['综合', '爱情', '事业', '学业', '财运', '健康', '人际'] as const
+const selectedTopic = ref('general')
+const topics = ['general', 'love', 'career', 'academics', 'wealth', 'health', 'relationships'] as const
 const headerPadding = ref('0px')
 
 onMounted(() => {
   const systemInfo = Taro.getSystemInfoSync()
   const statusBarHeight = systemInfo.statusBarHeight || 0
   headerPadding.value = `${statusBarHeight + 10}px`
+  
+  // Try to play BGM on home page mount (backup for onLaunch)
+  if (settingsStore.enableBgm) {
+    playBgm()
+  }
 })
 
+function goToSettings() {
+  playBgm()
+  Taro.navigateTo({ url: '/pages/settings/index' })
+}
+
 function openTopicSelect() {
+  playBgm()
   showTopicSelect.value = true
 }
 
@@ -64,10 +91,12 @@ function closeTopicSelect() {
 }
 
 function handleSelect(t: string) {
+  playBgm()
   selectedTopic.value = t
 }
 
 function confirmStart() {
+  playBgm()
   store.setLines([])
   store.setTopic(selectedTopic.value)
   showTopicSelect.value = false
@@ -83,6 +112,26 @@ function confirmStart() {
   background: $bg-color;
   padding: 0 20px 110px;
   box-sizing: border-box;
+}
+
+.settings-btn {
+  position: fixed;
+  left: 20px;
+  z-index: 200;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.settings-icon {
+  font-size: 24px;
+  line-height: 1;
+  color: #666;
 }
 
 .center {
