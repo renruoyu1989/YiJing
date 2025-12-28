@@ -83,17 +83,18 @@ function goHome() {
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 @use "@/styles/tokens.scss" as *;
 
 .page {
   min-height: 100vh;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
   background: $bg-color;
   padding: 0 20px 150px;
   box-sizing: border-box;
 }
+
 
 .card {
   margin-top: 16px;

@@ -54,7 +54,8 @@ watch(messages, (newVal) => {
 onMounted(() => {
   const systemInfo = Taro.getSystemInfoSync()
   const statusBarHeight = systemInfo.statusBarHeight || 0
-  headerPadding.value = `${statusBarHeight + 10}px`
+  // Add more padding to avoid topbar overlap on iOS
+  headerPadding.value = `${Math.max(statusBarHeight + 60, 80)}px`
 })
 
 function handleBgmChange(e) {

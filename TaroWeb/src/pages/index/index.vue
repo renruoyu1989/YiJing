@@ -104,6 +104,23 @@ onMounted(() => {
   }
 })
 
+// Force no scroll when page is shown
+Taro.useDidShow(() => {
+  // Prevent body scroll on index page
+  if (typeof document !== 'undefined') {
+    document.body.style.overflow = 'hidden'
+    document.documentElement.style.overflow = 'hidden'
+  }
+})
+
+// Re-enable scroll when leaving page
+Taro.useDidHide(() => {
+  if (typeof document !== 'undefined') {
+    document.body.style.overflow = ''
+    document.documentElement.style.overflow = ''
+  }
+})
+
 function goToSettings() {
   if (settingsStore.enableBgm) playBgm()
   Taro.navigateTo({ url: '/pages/settings/index' })
@@ -132,14 +149,17 @@ function confirmStart() {
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 @use "@/styles/tokens.scss" as *;
 
 .page {
-  height: 100vh;
-  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100vh !important;
+  overflow: hidden !important;
   background: $bg-color;
-  padding: 0 20px 110px;
+  padding: 0 20px 0;
   box-sizing: border-box;
 }
 
@@ -172,11 +192,11 @@ function confirmStart() {
 }
 
 .center {
-  min-height: calc(100vh - 110px);
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: -80px; /* Move taiji logo higher */
+  margin-top: -120px;
 }
 
 .taiji-wrapper {
@@ -255,7 +275,7 @@ function confirmStart() {
 }
 
 .bottom {
-  position: fixed;
+  position: absolute;
   left: 20px;
   right: 20px;
   bottom: 26px;
