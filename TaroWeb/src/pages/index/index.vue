@@ -72,11 +72,14 @@ onMounted(() => {
   
   if (process.env.TARO_ENV === 'weapp') {
     const menuButton = Taro.getMenuButtonBoundingClientRect()
-    // Align center with capsule
-    // Capsule height is usually 32px
-    // Our button is 44px
     top = menuButton.top + (menuButton.height - 44) / 2
+  } else if (process.env.TARO_ENV === 'h5') {
+    // H5 specific logic
+    // Use CSS variable if available or default
+    // We will set a value here, but the style binding will be overridden by a specific class if needed
+    top = 10 // Default fallback
   } else {
+    // RN or other
     top += 10
   }
   
@@ -86,6 +89,10 @@ onMounted(() => {
   btnTop.value = `${top}px`
   headerPadding.value = `${top + 54}px` // 44px button + 10px margin
   
+  if (process.env.TARO_ENV === 'h5') {
+     btnTop.value = 'calc(env(safe-area-inset-top) + 10px)'
+  }
+
   // Try to play BGM on home page mount (backup for onLaunch)
   if (settingsStore.enableBgm) {
     playBgm()
@@ -133,7 +140,7 @@ function confirmStart() {
 .settings-btn {
   position: fixed;
   left: 20px;
-  z-index: 999; /* Increased z-index */
+  z-index: 10000; /* Max z-index */
   width: 44px; /* Increased size */
   height: 44px;
   display: flex;

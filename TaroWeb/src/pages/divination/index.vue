@@ -8,7 +8,6 @@
             'coin--flipping': flippingState[idx],
             'coin--back': !flippingState[idx] && coin === 2
           }"
-          :style="{ animationDuration: flippingDuration[idx] }"
         >
           <view class="coin__face coin__face--front">
             <image class="coin__img" :src="coinFrontSrc" mode="aspectFill" />
@@ -239,7 +238,8 @@ function tossOneLine() {
 @use "@/styles/tokens.scss" as *;
 
 .page {
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
   background: $bg-color;
   padding: 0 20px 150px;
   box-sizing: border-box;
@@ -269,7 +269,7 @@ function tossOneLine() {
 }
 
 .coin--flipping {
-  animation: coinFlip 1s linear infinite;
+  animation: coinFlip 0.2s linear infinite;
 }
 
 .coin__face {
