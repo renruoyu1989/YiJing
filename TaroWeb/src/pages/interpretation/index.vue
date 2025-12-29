@@ -1,10 +1,10 @@
 <template>
   <view class="page" :style="{ paddingTop: headerPadding }">
     <view class="scroll-container">
-      <view class="title">{{ messages.ui.interpretation.title }}（{{ topicName }}）</view>
+      <view class="title">{{ messages.ui.interpretation_page.title }}（{{ topicName }}）</view>
       
       <view class="card">
-        <view class="card__title">【{{ title }}】 {{ messages.ui.interpretation.analysis }}</view>
+        <view class="card__title">【{{ title }}】 {{ messages.interpretation.structure.title }}</view>
         <view class="rich-text">
           <view v-for="(p, idx) in formattedContent" :key="idx" class="rich-text-paragraph">
             {{ p }}
@@ -13,7 +13,7 @@
       </view>
 
       <view class="card" v-if="originalText">
-        <view class="card__title">{{ messages.ui.interpretation.original }}</view>
+        <view class="card__title">{{ messages.ui.hexagram.guaci }}</view>
         <view class="card__text">{{ originalText }}</view>
       </view>
       <!-- Add extra padding at bottom of scroll content -->
@@ -21,8 +21,8 @@
     </view>
 
     <view class="bottom">
-      <nut-button plain block @click="goBack">{{ messages.ui.interpretation.back }}</nut-button>
-      <nut-button plain block @click="goHome">{{ messages.ui.interpretation.home }}</nut-button>
+      <nut-button type="info" block @click="goBack">{{ messages.ui.interpretation_page.back_hexagram }}</nut-button>
+      <nut-button type="primary" block @click="goHome">{{ messages.ui.interpretation_page.back_home }}</nut-button>
     </view>
   </view>
 </template>
@@ -34,6 +34,8 @@ import { useDivinationStore } from '@/stores/divination'
 import { useSettingsStore } from '@/stores/settings'
 import { generateRichInterpretation, type Topic } from '@/utils/interpretationHelper'
 import { getLocaleMessages } from '@/utils/i18n'
+import { linesToSymbol } from '@/utils/iching'
+import { findHexagramBySymbol } from '@/data/hexagrams'
 
 definePageConfig({
   // navigationBarTitleText set dynamically
@@ -47,14 +49,27 @@ const currentLines = computed(() => store.lines)
 const currentTopic = computed(() => store.topic || 'general')
 const messages = computed(() => getLocaleMessages(settingsStore.language))
 
+// 1. Map topicName for template
+const topicName = computed(() => {
+  return messages.value.topics[currentTopic.value as Topic] || currentTopic.value
+})
+
 watch(messages, (newVal) => {
   Taro.setNavigationBarTitle({
     title: newVal.ui.interpretation_page.title
   })
 }, { immediate: true })
 
-const topicDisplayName = computed(() => {
-  return messages.value.topics[currentTopic.value as Topic] || currentTopic.value
+// 2. Compute Hexagram for Title and Original Text
+const symbol = computed(() => linesToSymbol(currentLines.value))
+const hexagram = computed(() => findHexagramBySymbol(symbol.value, settingsStore.language))
+
+const title = computed(() => {
+  return hexagram.value?.name ?? messages.value.ui.hexagram.unknown
+})
+
+const originalText = computed(() => {
+  return hexagram.value?.guaci ?? ''
 })
 
 const richInterpretation = computed(() => {
@@ -65,7 +80,8 @@ const richInterpretation = computed(() => {
   )
 })
 
-const richInterpretationParagraphs = computed(() => {
+// 3. Map formattedContent for template
+const formattedContent = computed(() => {
   if (!richInterpretation.value) return []
   return richInterpretation.value.split('\n')
 })
@@ -131,7 +147,7 @@ function goHome() {
 .page {
   display: flex !important;
   flex-direction: column !important;
-  height: 100vh !important;
+  height: 100% !important;
   overflow: hidden !important;
   background: $bg-color;
   box-sizing: border-box;

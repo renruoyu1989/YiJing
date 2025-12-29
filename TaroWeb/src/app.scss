@@ -15,6 +15,14 @@ page {
   --nut-text-color: #{$primary-color};
 }
 
+html,
+body,
+#app,
+.taro_page {
+  height: 100%;
+  overflow: hidden; /* Prevent global scroll */
+}
+
 /* H5 Desktop Preview Mode - 9:16 Aspect Ratio */
 // @ts-ignore
 @media screen and (min-width: 500px) {

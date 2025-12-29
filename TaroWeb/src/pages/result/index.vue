@@ -334,7 +334,7 @@ function goToInterpretation() {
 .page {
   display: flex !important;
   flex-direction: column !important;
-  height: 100vh !important;
+  height: 100% !important;
   overflow: hidden !important;
   background: $bg-color;
   box-sizing: border-box;
@@ -555,12 +555,8 @@ function goToInterpretation() {
 }
 
 .bottom {
-  position: fixed;
-  left: 20px;
-  right: 20px;
-  bottom: 26px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  padding: 16px 20px;
+  background: transparent;
+  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
 }
 </style>

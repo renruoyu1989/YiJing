@@ -234,14 +234,17 @@ function tossOneLine() {
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 @use "@/styles/tokens.scss" as *;
 
 .page {
-  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
   overflow: hidden;
+  touch-action: none; /* Prevent all touch-based scrolling and dragging */
   background: $bg-color;
-  padding: 0 20px 150px;
+  padding: 0 20px 0;
   box-sizing: border-box;
 }
 

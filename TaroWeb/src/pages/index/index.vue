@@ -156,7 +156,7 @@ function confirmStart() {
   position: relative;
   display: flex;
   flex-direction: column;
-  height: 100vh !important;
+  height: 100% !important;
   overflow: hidden !important;
   background: $bg-color;
   padding: 0 20px 0;
@@ -275,11 +275,9 @@ function confirmStart() {
 }
 
 .bottom {
-  position: absolute;
-  left: 20px;
-  right: 20px;
-  bottom: 26px;
-  z-index: 10;
+  padding: 16px 20px;
+  background: transparent;
+  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
 }
 
 @keyframes spin {
