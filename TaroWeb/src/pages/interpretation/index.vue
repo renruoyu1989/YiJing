@@ -1,21 +1,28 @@
 <template>
   <view class="page" :style="{ paddingTop: headerPadding }">
-    <view class="card highlight-card">
-      <view class="card__title">{{ messages.ui.interpretation_page.title }}（{{ topicDisplayName }}）</view>
-      <view class="card__text">
-        <view 
-          v-for="(para, idx) in richInterpretationParagraphs" 
-          :key="idx" 
-          class="rich-text-paragraph"
-        >
-          {{ para }}
+    <view class="scroll-container">
+      <view class="title">{{ messages.ui.interpretation.title }}（{{ topicName }}）</view>
+      
+      <view class="card">
+        <view class="card__title">【{{ title }}】 {{ messages.ui.interpretation.analysis }}</view>
+        <view class="rich-text">
+          <view v-for="(p, idx) in formattedContent" :key="idx" class="rich-text-paragraph">
+            {{ p }}
+          </view>
         </view>
       </view>
+
+      <view class="card" v-if="originalText">
+        <view class="card__title">{{ messages.ui.interpretation.original }}</view>
+        <view class="card__text">{{ originalText }}</view>
+      </view>
+      <!-- Add extra padding at bottom of scroll content -->
+      <view style="height: 20px;"></view>
     </view>
 
     <view class="bottom">
-      <nut-button type="primary" block @click="goBack">{{ messages.ui.interpretation_page.back_hexagram }}</nut-button>
-      <nut-button plain block @click="goHome">{{ messages.ui.interpretation_page.back_home }}</nut-button>
+      <nut-button plain block @click="goBack">{{ messages.ui.interpretation.back }}</nut-button>
+      <nut-button plain block @click="goHome">{{ messages.ui.interpretation.home }}</nut-button>
     </view>
   </view>
 </template>
@@ -86,14 +93,7 @@ function goHome() {
 <style lang="scss" scoped>
 @use "@/styles/tokens.scss" as *;
 
-.page {
-  min-height: 100vh;
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
-  background: $bg-color;
-  padding: 0 20px 150px;
-  box-sizing: border-box;
-}
+
 
 
 .card {
@@ -128,13 +128,29 @@ function goHome() {
   text-align: justify;
 }
 
+.page {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100vh !important;
+  overflow: hidden !important;
+  background: $bg-color;
+  box-sizing: border-box;
+}
+
+.scroll-container {
+  flex: 1;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+  padding: 0 20px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
 .bottom {
-  position: fixed;
-  left: 20px;
-  right: 20px;
-  bottom: 26px;
+  padding: 16px 20px;
   display: flex;
   flex-direction: column;
   gap: 16px;
+  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
 }
 </style>

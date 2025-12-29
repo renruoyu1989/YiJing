@@ -1,67 +1,71 @@
 <template>
   <view class="page" :style="{ paddingTop: headerPadding }">
-    <view class="hexagram">
-      <view v-for="(line, idx) in topDownLines" :key="idx" class="line" :class="lineClass(line)">
-        <view v-if="isYang(line)" class="line__yang">
-          <view class="line__bar" />
-        </view>
-        <view v-else class="line__yin">
-          <view class="line__bar line__bar--half" />
-          <view class="line__gap" />
-          <view class="line__bar line__bar--half" />
-        </view>
-      </view>
-    </view>
-
-    <view class="title">{{ coreName }}</view>
-    <view class="sub">{{ messages.ui.hexagram.upper }}：{{ upperName }}　{{ messages.ui.hexagram.lower }}：{{ lowerName }}</view>
-
-    <view class="card">
-      <view class="card__title">{{ messages.ui.hexagram.lines }}</view>
-      <view class="meta-list">
-        <view v-for="item in lineMetaItems" :key="item.key" class="meta-item" :class="item.isMoving ? 'meta-item--moving' : ''">
-          <view class="meta-item__label">{{ item.label }}</view>
-          <view class="meta-item__text">{{ item.kind }}（{{ item.value }}）</view>
+    <view class="scroll-container">
+      <view class="hexagram">
+        <view v-for="(line, idx) in topDownLines" :key="idx" class="line" :class="lineClass(line)">
+          <view v-if="isYang(line)" class="line__yang">
+            <view class="line__bar" />
+          </view>
+          <view v-else class="line__yin">
+            <view class="line__bar line__bar--half" />
+            <view class="line__gap" />
+            <view class="line__bar line__bar--half" />
+          </view>
         </view>
       </view>
-    </view>
 
-    <view class="card">
-      <view class="card__title">{{ messages.ui.hexagram.guaci }}</view>
-      <view class="card__text">{{ guaciText }}</view>
-    </view>
+      <view class="title">{{ coreName }}</view>
+      <view class="sub">{{ messages.ui.hexagram.upper }}：{{ upperName }}　{{ messages.ui.hexagram.lower }}：{{ lowerName }}</view>
 
-    <view class="card">
-      <view class="card__title">{{ messages.ui.hexagram.yaoci }}</view>
-      <view class="yao-list">
-        <view v-for="item in yaociItems" :key="item.key" class="yao-item" :class="item.isMoving ? 'yao-item--moving' : ''">
-          <view class="yao-item__label">{{ item.label }}</view>
-          <view class="yao-item__text">{{ item.text }}</view>
+      <view class="card">
+        <view class="card__title">{{ messages.ui.hexagram.lines }}</view>
+        <view class="meta-list">
+          <view v-for="item in lineMetaItems" :key="item.key" class="meta-item" :class="item.isMoving ? 'meta-item--moving' : ''">
+            <view class="meta-item__label">{{ item.label }}</view>
+            <view class="meta-item__text">{{ item.kind }}（{{ item.value }}）</view>
+          </view>
         </view>
       </view>
-      <view v-if="useText" class="use-line">
-        <view class="use-line__label">{{ useLabel }}</view>
-        <view class="use-line__text">{{ useText }}</view>
-      </view>
-    </view>
 
-    <view v-if="hasChanging" class="card">
-      <view class="card__title">{{ messages.ui.hexagram.changed }}</view>
-      <view class="card__text">
-        {{ changedCoreName }}（{{ messages.ui.hexagram.upper }}：{{ changedUpperName }}　{{ messages.ui.hexagram.lower }}：{{ changedLowerName }}）
+      <view class="card">
+        <view class="card__title">{{ messages.ui.hexagram.guaci }}</view>
+        <view class="card__text">{{ guaciText }}</view>
       </view>
-      <view class="card__text">{{ changedGuaciText }}</view>
-    </view>
 
-    <view class="card">
-      <view class="card__title">{{ messages.ui.hexagram.source }}</view>
-      <view class="pick-tip">{{ pickTip }}</view>
-      <view class="pick-list">
-        <view v-for="item in pickedTexts" :key="item.key" class="pick-item">
-          <view class="pick-item__label">{{ item.label }}</view>
-          <view class="pick-item__text">{{ item.text }}</view>
+      <view class="card">
+        <view class="card__title">{{ messages.ui.hexagram.yaoci }}</view>
+        <view class="yao-list">
+          <view v-for="item in yaociItems" :key="item.key" class="yao-item" :class="item.isMoving ? 'yao-item--moving' : ''">
+            <view class="yao-item__label">{{ item.label }}</view>
+            <view class="yao-item__text">{{ item.text }}</view>
+          </view>
+        </view>
+        <view v-if="useText" class="use-line">
+          <view class="use-line__label">{{ useLabel }}</view>
+          <view class="use-line__text">{{ useText }}</view>
         </view>
       </view>
+
+      <view v-if="hasChanging" class="card">
+        <view class="card__title">{{ messages.ui.hexagram.changed }}</view>
+        <view class="card__text">
+          {{ changedCoreName }}（{{ messages.ui.hexagram.upper }}：{{ changedUpperName }}　{{ messages.ui.hexagram.lower }}：{{ changedLowerName }}）
+        </view>
+        <view class="card__text">{{ changedGuaciText }}</view>
+      </view>
+
+      <view class="card">
+        <view class="card__title">{{ messages.ui.hexagram.source }}</view>
+        <view class="pick-tip">{{ pickTip }}</view>
+        <view class="pick-list">
+          <view v-for="item in pickedTexts" :key="item.key" class="pick-item">
+            <view class="pick-item__label">{{ item.label }}</view>
+            <view class="pick-item__text">{{ item.text }}</view>
+          </view>
+        </view>
+      </view>
+      <!-- Add extra padding at bottom of scroll content -->
+      <view style="height: 20px;"></view>
     </view>
 
     <view class="bottom">
@@ -328,12 +332,27 @@ function goToInterpretation() {
 @use "@/styles/tokens.scss" as *;
 
 .page {
-  min-height: 100vh;
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100vh !important;
+  overflow: hidden !important;
   background: $bg-color;
-  padding: 0 20px 150px;
   box-sizing: border-box;
+}
+
+.scroll-container {
+  flex: 1;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+  padding: 0 20px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.bottom {
+  padding: 16px 20px;
+  background: transparent;
+  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
 }
 
 .hexagram {
