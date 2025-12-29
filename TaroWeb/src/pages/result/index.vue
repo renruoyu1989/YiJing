@@ -557,6 +557,6 @@ function goToInterpretation() {
 .bottom {
   padding: 16px 20px;
   background: transparent;
-  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px));
 }
 </style>

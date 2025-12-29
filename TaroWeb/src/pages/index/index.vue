@@ -196,7 +196,7 @@ function confirmStart() {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: -200px; /* Adjusted to move taiji up moderately */
+  margin-top: -180px; /* Adjusted to move taiji up moderately */
 }
 
 .taiji-wrapper {
@@ -277,7 +277,7 @@ function confirmStart() {
 .bottom {
   padding: 16px 20px;
   background: transparent;
-  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px));
 }
 
 @keyframes spin {

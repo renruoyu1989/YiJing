@@ -142,6 +142,8 @@ function goHome() {
   min-height: 1em;
   margin-bottom: 6px;
   text-align: justify;
+  font-size: 15px;
+  line-height: 1.8;
 }
 
 .page {
@@ -167,6 +169,6 @@ function goHome() {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px));
 }
 </style>
