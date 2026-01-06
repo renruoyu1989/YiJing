@@ -114,9 +114,15 @@ export function generateRichInterpretation(
     const isYangTop = yangTrigrams.includes(upperBits)
     const template = isYangTop ? coreMsg.general_yang : coreMsg.general_yin
     
+    // Get trigram nature attributes (safely)
+    const uNature = messages.trigram_attributes?.[upperBits] || ''
+    const lNature = messages.trigram_attributes?.[lowerBits] || ''
+    
     coreAdvice = template
       .replace(/{upperName}/g, upperName)
       .replace(/{lowerName}/g, lowerName)
+      .replace(/{upperNature}/g, uNature)
+      .replace(/{lowerNature}/g, lNature)
       .replace(/{meaning}/g, lowerMeaning)
   }
 
