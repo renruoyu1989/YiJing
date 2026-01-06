@@ -160,7 +160,7 @@ trigram_attributes: {
     },
     divination: {
       title: '起卦',
-      toss: '掷一爻 (摇一摇)',
+      toss: '掷一爻',
       hint_progress: '已得 {count}/6 爻',
       hint_done: '卦成，正在解卦…'
     },
@@ -169,7 +169,7 @@ trigram_attributes: {
       six: '六'
     },
     home: {
-      title: '易心',
+      title: '每日一卦',
       start_btn: '诚心起卦',
       select_topic_title: '请选择求问方向',
       select_topic_sub: '诚心诚意，一事一测',
